@@ -1,0 +1,151 @@
+% *****************************************************************************
+%
+%        FASThesis Cover Sheet
+%        (Cover sheet for theses typeset using the FASThesis class)
+%
+%        Faculty of Applied Sciences
+%        University of West Bohemia
+%
+%        Auxiliary Document (to FASThesis classfile and template)
+%        Copyright (c) 2022-2025 Kamil Ekštein, Dept. of Computer Science
+%        and Engineering, Faculty of Applied Sciences, UWB
+%
+%        Version:  1.0
+%		 Encoding: UTF-8
+%		 TeXer:    pdflatex
+%
+%        Last modification on 22-Apr-2025 by KE
+%
+% *****************************************************************************
+
+% =============================================================================
+%
+%        !!! NÍŽE NASTAVTE HODNOTY/PARAMETRY SAZBY VAŠICH DESEK !!!
+%        !!! SET THE VALUES/PARAMETERS OF YOUR HARD COVER BELOW !!!
+%
+% =============================================================================
+% zde nastavte jméno PDF souboru s vaší kvalifikační prací, ze které se vezme
+% první a poslední stránka na desky ---
+% below, set the name of the PDF file with your thesis from which the first and
+% the last page will be taken for the cover
+\def\WorkPDF{diplomova_prace.pdf}
+
+% zde zadejte počet stran práce (nikoliv číslo poslední číslované stránky, ale
+% skutečný počet stran dokumentu PDF) ---
+% below, enter the number of pages of the work (not the number of the last
+% numbered page but the actual number of pages of the PDF document)
+\def\WorkPDFPages{56}
+
+% zde změňte jazyk na 'english' pokud je vaše práce napsaná v angličtině ---
+% below, change the language to 'english' if your thesis is written in English
+\def\WorkLanguage{czech}
+
+% zde nastavte text, který bude vysázen na hřbet vazby, tj. autora a (zkrácený)
+% název práce ---
+% below, set the text to be typeset onto the cover spine, i.e. the author &
+% the work title (shortened)
+\def\WorkSpineAuthor{J. Novák}
+\def\WorkSpineTitle{Nová vědecká metoda prokrastinace}
+% -----------------------------------------------------------------------------
+\makeatletter
+% nastavení rozměrů archu desek --> postupujte podle pokynů/manuálu knihvazače
+% (šablona CasePlano_0-80 užívaná na https://www.supervazby.cz má 476 x 341 mm)
+% setting the cover sheet dimensions --> proceed as instructed by the bookbinder
+% (the CasePlano_0-80 template used at https://www.supervazby.cz has 476 x 341 mm)
+\newdimen\cover@sheet@width\cover@sheet@width=476mm % 481mm pro/for 80-120 str/pg
+\newdimen\cover@sheet@height\cover@sheet@height=341mm
+
+% nastavení šířky vazby --> postupujte podle pokynů/manuálu knihvazače
+% (obvykle 14 mm pro vazbu do 80 stránek, 19 mm pro vazbu 80 až 120 stránek)
+% setting the spine width --> proceed as instructed by the bookbinder
+% (usually 14 mm for binding upto 80 pages, 19 mm for binding 80 to 120 pages)
+\newdimen\cover@spine@width\cover@spine@width=14mm
+% =============================================================================
+%
+%        !!! ODTUD DÁLE UŽ NA TO NESAHEJTE, VŠE JE ZAŘÍZENO !!!
+%        !!! FROM HERE ONWARDS, DO NOT TOUCH IT, ALL IS SET !!!
+%
+% =============================================================================
+
+% _____________________________________________________________________________
+%
+%        DOCUMENT HEADER
+% _____________________________________________________________________________
+%
+\documentclass[a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[\WorkLanguage]{babel}
+
+\usepackage{graphicx}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+
+\usepackage[margin=0pt, papersize={\cover@sheet@width, \cover@sheet@height}]{geometry}
+% _____________________________________________________________________________
+%
+%        COLOURS
+% _____________________________________________________________________________
+%
+% the official yellow of the Faculty of Applied Sciences as defined in the
+% "Logomanuál ZČU 2021", pg 17
+\definecolor{FASThesis@FASColor}{cmyk}{0.06, 0.27, 1.0, 0.12}
+% the official gray of the Faculty of Applied Sciences as defined in the
+% "Logomanuál ZČU 2021", pg 17
+\definecolor{FASThesis@UWBGray}{cmyk}{0.07, 0.04, 0.06, 0.19}
+% _____________________________________________________________________________
+%
+%        FONTS
+% _____________________________________________________________________________
+%
+\font\GTAmerica@Spine=GTAmerica-CondensedBold-lf-t1 at 21pt
+\font\GTAmerica@Spine@Author=GTAmerica-CondensedRegular-lf-t1 at 21pt
+% _____________________________________________________________________________
+%
+%        DIMENSIONS
+% _____________________________________________________________________________
+%
+\newdimen\cover@spine@titlebox@width
+\newdimen\cover@spine@titlebox@height
+\newsavebox{\cover@spine@titlebox}
+\savebox{\cover@spine@titlebox}{%
+  \strut\color{white}{\GTAmerica@Spine@Author\WorkSpineAuthor:~}{\GTAmerica@Spine\WorkSpineTitle}%
+}
+\settowidth{\cover@spine@titlebox@width}{\usebox{\cover@spine@titlebox}}%
+\settoheight{\cover@spine@titlebox@height}{\usebox{\cover@spine@titlebox}}%
+% _____________________________________________________________________________
+%
+%        DOCUMENT BODY
+% _____________________________________________________________________________
+%
+\begin{document}
+\pagestyle{empty} % no page numbers on the cover sheet
+\shorthandoff{-} % correct (for a while) the idiotic babel behaviour to `-'
+\begin{tikzpicture}[remember picture, overlay]
+  % typeset the last page as the left half of the cover
+  \node[anchor=north east, inner sep=0pt] at
+    ([xshift=\dimexpr.5\cover@sheet@width-.5\cover@spine@width-1mm\relax,%
+      yshift=-18.5mm]current page.north west)
+    {\includegraphics[page=\WorkPDFPages, height=\dimexpr\cover@sheet@height-37mm\relax]{\WorkPDF}};
+  % typeset the first page as the right half of the cover	
+  \node[anchor=north west, inner sep=0pt] at
+    ([xshift=\dimexpr.5\cover@sheet@width+.5\cover@spine@width+1mm\relax,%
+	  yshift=-18.5mm]current page.north west)
+    {\includegraphics[page=1, height=\dimexpr\cover@sheet@height-37mm\relax]{\WorkPDF}};
+  % typeset the cover spine
+  \fill[FASThesis@FASColor]
+    ([xshift=-\dimexpr.5\cover@spine@width\relax]current page.center |- current page.south) rectangle 
+    ([xshift=\dimexpr.5\cover@spine@width\relax]current page.center |- current page.north);
+  % put the rotated spine title inside the spine rectangle
+  \node[rotate=90, text=white, anchor=south] at
+    ([xshift=\dimexpr1.0\cover@spine@titlebox@height\relax,
+	  yshift=\dimexpr.5\cover@spine@titlebox@width+28.5mm\relax]current page.south)
+    {\usebox{\cover@spine@titlebox}};
+  % *** DEBUG ONLY ***
+  %\draw[line width=1pt, black]
+  %  (current page.center |- current page.north) --
+  %  (current page.center |- current page.south);
+\end{tikzpicture}
+\shorthandon{-}
+\end{document}

@@ -1,0 +1,48 @@
+[project]
+name = "cnb-document-classifier"
+version = "0.1.0"
+description = "Classify CNB OAM regulated information documents by category using multiple ML approaches"
+requires-python = ">=3.10"
+readme = "README.md"
+
+dependencies = [
+    # Scraping
+    "playwright>=1.40",
+    "beautifulsoup4>=4.12",
+    "lxml>=4.9",
+    "httpx>=0.25",
+
+    # Text extraction
+    "pdfplumber>=0.10",
+    "PyMuPDF>=1.23",
+    "python-docx>=0.8",
+
+    # ML - Traditional
+    "scikit-learn>=1.3",
+    "pandas>=2.1",
+    "numpy>=1.25",
+
+    # Evaluation & Visualization
+    "matplotlib>=3.8",
+    "seaborn>=0.13",
+
+    # Utilities
+    "tqdm>=4.66",
+    "pyyaml>=6.0",
+    "click>=8.1",
+]
+
+[project.optional-dependencies]
+bert = [
+    "transformers>=4.35",
+    "torch>=2.1",
+    "datasets>=2.14",
+    "accelerate>=0.25",
+]
+
+[project.scripts]
+cnb-classifier = "src.cli:cli"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"

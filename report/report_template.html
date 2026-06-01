@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interaktivní semestrální práce o klasifikaci a validaci dokumentů ČNB OAM pomocí metod strojového učení a LLM.">
+    <title>Validace dokumentů ČNB OAM — Semestrální práce</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #fafaf9;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f5f5f4;
+            --text-primary: #1c1917;
+            --text-secondary: #44403c;
+            --text-muted: #a8a29e;
+            --accent: #b45309; /* Deep gold/amber for high contrast on light mode */
+            --accent-light: #fef3c7; /* Soft yellow background */
+            --accent-gradient: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); /* FAV Yellow/Gold Gradient */
+            --border-color: #e7e5e4;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1c1917;
+            --bg-secondary: #292524;
+            --bg-tertiary: #1c1917;
+            --text-primary: #f5f5f4;
+            --text-secondary: #d6d3d1;
+            --text-muted: #78716c;
+            --accent: #f59e0b; /* Bright gold/amber for dark mode */
+            --accent-light: #451a03; /* Deep dark amber background */
+            --accent-gradient: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+            --border-color: #44403c;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: var(--transition);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Navigation */
+        aside {
+            width: 280px;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem 1.5rem;
+            transition: var(--transition);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        .logo-text {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex-grow: 1;
+        }
+
+        .nav-links a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover {
+            background-color: var(--bg-tertiary);
+            color: var(--accent);
+        }
+
+        .nav-links li.active a {
+            background-color: var(--accent-light);
+            color: var(--accent);
+        }
+
+        .theme-toggle-area {
+            border-top: 1px solid var(--border-color);
+            padding-top: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .toggle-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .toggle-btn:hover {
+            background-color: var(--bg-tertiary);
+            color: var(--accent);
+        }
+
+        /* Main Content Container */
+        main {
+            margin-left: 280px;
+            flex-grow: 1;
+            padding: 3rem 4rem;
+            max-width: 1200px;
+        }
+
+        header {
+            margin-bottom: 3.5rem;
+            position: relative;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background-color: var(--accent-light);
+            color: var(--accent);
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.75rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .author-box {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .author-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .author-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .author-dept {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Chapters and Sections */
+        section {
+            padding: 3.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        section:last-of-type {
+            border-bottom: none;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        h2 i {
+            color: var(--accent);
+        }
+
+        h3 {
+            font-size: 1.35rem;
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            margin-bottom: 1.25rem;
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+        }
+
+        strong {
+            color: var(--text-primary);
+        }
+
+        /* Abstract Box */
+        .abstract-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .abstract-column h3 {
+            margin-top: 0;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+        }
+
+        .abstract-column p {
+            font-size: 0.95rem;
+            margin-bottom: 0;
+        }
+
+        .keywords {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Cards & Features */
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--accent);
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-desc {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        /* Code Block */
+        pre {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-sm);
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--accent);
+        }
+
+        pre code {
+            color: var(--text-primary);
+        }
+
+        /* UI Table Layouts */
+        .table-container {
+            overflow-x: auto;
+            margin: 2rem 0;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            background-color: var(--bg-secondary);
+            transition: var(--transition);
+        }
+
+        .table-container:hover {
+            box-shadow: var(--shadow-md);
+            border-color: var(--accent);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--bg-secondary);
+            text-align: left;
+        }
+
+        th, td {
+            padding: 0.85rem 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.95rem;
+        }
+
+        th {
+            background-color: var(--bg-tertiary);
+            font-weight: 600;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background-color: rgba(180, 83, 9, 0.04);
+        }
+
+        [data-theme="dark"] tbody tr:hover {
+            background-color: rgba(245, 158, 11, 0.05);
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: rgba(0, 0, 0, 0.005);
+        }
+        [data-theme="dark"] tbody tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.01);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .highlight-row {
+            background-color: var(--accent-light) !important;
+            font-weight: 600;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* Split Badges */
+        .split-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .train-badge {
+            background-color: rgba(34, 197, 94, 0.12);
+            color: #16a34a;
+        }
+        [data-theme="dark"] .train-badge {
+            background-color: rgba(34, 197, 94, 0.18);
+            color: #4ade80;
+        }
+
+        .val-badge {
+            background-color: rgba(245, 158, 11, 0.12);
+            color: #ca8a04;
+        }
+        [data-theme="dark"] .val-badge {
+            background-color: rgba(245, 158, 11, 0.18);
+            color: #facc15;
+        }
+
+        .test-badge {
+            background-color: rgba(99, 102, 241, 0.12);
+            color: #4f46e5;
+        }
+        [data-theme="dark"] .test-badge {
+            background-color: rgba(99, 102, 241, 0.18);
+            color: #818cf8;
+        }
+
+        .total-badge {
+            background-color: var(--accent-light);
+            color: var(--accent);
+        }
+
+        /* Interactive Dashboard */
+        .dashboard-container {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: var(--shadow-md);
+        }
+
+        .dashboard-tabs {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 0.5rem 1.25rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+        }
+
+        .tab-btn:hover {
+            background-color: var(--bg-tertiary);
+            color: var(--accent);
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .dashboard-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 900px) {
+            .dashboard-content {
+                grid-template-columns: 1.2fr 1fr;
+            }
+        }
+
+        /* Interactive SVG Chart styling */
+        .chart-wrapper {
+            background-color: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .chart-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .bar-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .bar-label {
+            width: 180px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .bar-container {
+            flex-grow: 1;
+            height: 16px;
+            background-color: var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: var(--accent-gradient);
+            border-radius: 8px;
+            width: 0;
+            transition: width 1s cubic-bezier(0.1, 0.8, 0.3, 1);
+        }
+
+        .bar-value {
+            width: 50px;
+            text-align: right;
+            font-size: 0.85rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+        }
+
+        /* Interactive Confusion Matrix Grid */
+        .matrix-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 2px;
+            background-color: var(--border-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            width: 100%;
+            max-width: 420px;
+            aspect-ratio: 1;
+        }
+
+        .matrix-cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: transparent;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .matrix-cell:hover {
+            transform: scale(1.1);
+            z-index: 2;
+            color: var(--text-primary) !important;
+            border: 1px solid var(--accent);
+            box-shadow: var(--shadow-md);
+        }
+
+        .matrix-tooltip {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 0.85rem;
+            width: 100%;
+            max-width: 420px;
+            min-height: 80px;
+        }
+
+        .matrix-switch-btn {
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        .matrix-switch-btn.active {
+            background-color: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        /* Interactive Sandbox Tester */
+        .sandbox-container {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            margin: 2.5rem 0;
+        }
+
+        .sandbox-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-secondary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background-color: var(--bg-tertiary);
+        }
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            color: white;
+            opacity: 0.9;
+        }
+
+        textarea {
+            width: 100%;
+            height: 180px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            padding: 1rem;
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+            outline: none;
+            margin-bottom: 1.5rem;
+            transition: var(--transition);
+        }
+
+        textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .sandbox-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .result-panel {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+        }
+
+        .result-panel h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .result-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .result-confidence {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .keyword-matches {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            margin-top: 0.75rem;
+        }
+
+        .keyword-pill {
+            font-size: 0.75rem;
+            background-color: var(--accent-light);
+            color: var(--accent);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Download Section */
+        .download-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--accent-gradient);
+            color: white;
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin: 3rem 0;
+        }
+
+        .download-box h3 {
+            margin-top: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .download-box p {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 0;
+            font-size: 0.95rem;
+        }
+
+        .btn-download {
+            background-color: white;
+            color: var(--accent);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+        }
+
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            opacity: 1;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 5rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 2rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 900px) {
+            body {
+                flex-direction: column;
+            }
+            aside {
+                position: relative;
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                padding: 1.5rem;
+            }
+            .logo-area {
+                margin-bottom: 1.5rem;
+            }
+            .nav-links {
+                display: none; /* Hide in mobile sidebar for space */
+            }
+            main {
+                margin-left: 0;
+                padding: 2rem;
+            }
+            .abstract-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <aside>
+        <div class="logo-area">
+            <div class="logo-text" style="font-size: 1.25rem; font-weight: 800; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ČNB OAM Classifier</div>
+        </div>
+        
+        <ul class="nav-links">
+            <li class="active"><a href="#uvod"><i class="fa-solid fa-home"></i> Úvod</a></li>
+            <li><a href="#teorie"><i class="fa-solid fa-book"></i> Teoretické zázemí</a></li>
+            <li><a href="#implementace"><i class="fa-solid fa-code"></i> Praktická implementace</a></li>
+            <li><a href="#srovnani"><i class="fa-solid fa-chart-simple"></i> Srovnání výsledků</a></li>
+            <li><a href="#testovani"><i class="fa-solid fa-vial"></i> Interaktivní testování</a></li>
+            <li><a href="#zaver"><i class="fa-solid fa-flag-checkered"></i> Závěr</a></li>
+        </ul>
+
+        <div class="theme-toggle-area">
+            <span style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 500;">Tmavý režim</span>
+            <button class="toggle-btn" id="theme-toggle" aria-label="Toggle theme">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main>
+        <header>
+            <div class="badge">
+                <i class="fa-solid fa-circle-check"></i> Semestrální práce / Projekt
+            </div>
+            <h1 id="uvod">Klasifikace a validace dokumentů regulovaných informací ČNB OAM</h1>
+            <div class="subtitle">Vyhodnocení metod strojového učení a velkých jazykových modelů (LLM) na českém korpusu</div>
+            
+            <div class="author-box" style="display: flex; align-items: center; gap: 1rem; margin-top: 1.5rem; padding: 1rem 1.25rem; background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); max-width: max-content;">
+                <div class="logo-icon" style="border-radius: 50%; font-size: 1.15rem; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--accent-gradient); color: white;">
+                    <i class="fa-solid fa-user-graduate"></i>
+                </div>
+                <div class="author-info">
+                    <div class="author-name" style="font-weight: 700; font-size: 1.05rem; color: var(--text-primary);">Martin Horešovský</div>
+                    <div class="author-dept" style="font-size: 0.85rem; color: var(--text-secondary);">Semestrální práce předmětu <strong>PUIA5</strong></div>
+                    <div class="author-univ" style="font-size: 0.8rem; color: var(--text-muted);">Fakulta aplikovaných věd (FAV) ZČU, Katedra kybernetiky (KKY)</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Abstract & Preface -->
+        <div class="abstract-container">
+            <div class="abstract-column">
+                <h3>Abstrakt (CZ)</h3>
+                <p>
+                    Tato semestrální práce se zabývá problematikou automatické klasifikace a validace dokumentů odesílaných do portálu regulovaných informací České národní banky (ČNB OAM). Cílem projektu je vytvořit robustní softwarový systém pro sběr dat z portálu ČNB OAM a vyhodnotit úspěšnost různých metod strojového učení a velkých jazykových modelů (LLM) při klasifikaci těchto dokumentů do příslušných kategorií. V práci je popsán návrh a implementace datového sběru, metodika předzpracování textu (včetně ořezávání dlouhých textů) a následné vyhodnocení.
+                </p>
+                <div class="keywords">Klíčová slova: klasifikace textu, Česká národní banka, ČNB OAM, strojové učení, TF-IDF, SVM, Gemma 3, ZČU</div>
+            </div>
+            <div class="abstract-column">
+                <h3>Abstract (EN)</h3>
+                <p>
+                    This semestral project addresses the automated classification and validation of regulatory documents submitted to the Czech National Bank's OAM portal. The objective of this project is to build a robust data collection pipeline and evaluate the performance of various machine learning and large language model (LLM) approaches in classifying these documents. We describe the design and implementation of the data collection process, text preprocessing techniques, and subsequent experiments.
+                </p>
+                <div class="keywords">Keywords: text classification, Czech National Bank, ML, TF-IDF, SVM, Gemma 3, UWB</div>
+            </div>
+        </div>
+
+        <!-- SECTION 1: ÚVOD -->
+        <section>
+            <h2><i class="fa-solid fa-home"></i> 1. Úvod</h2>
+            <p>
+                Portál oficiálního úložiště regulovaných informací České národní banky (ČNB OAM) slouží k uveřejňování zákonem předepsaných informací emitenty cenných papírů. Emitenti jsou povinni odesílat různé typy dokumentů, jako jsou výroční finanční zprávy, pololetní finanční zprávy, vnitřní informace, pozvánky na valné hromady a další.
+            </p>
+            <p>
+                V praxi však může dojít k situaci, kdy emitenti odesílají nesprávné typy dokumentů nebo dokumenty neodpovídající deklarované kategorii. Ruční kontrola každého vloženého dokumentu a jeho příloh by byla časově i personálně velmi náročná (aktuálně se nekontroluje). Z tohoto důvodu vzniká prostor pro využití metod strojového učení ke kontrole, která by dokázala analyzovat textový obsah odeslaných příloh a validovat, zda odpovídá deklarovanému typu informace.
+            </p>
+            <p>
+                Tento projekt se zaměřuje na vytvoření kompletního řešení, které zahrnuje:
+            </p>
+            <ul style="margin-left: 2rem; margin-bottom: 1.5rem; color: var(--text-secondary);">
+                <li>Automatizovaný sběr dat (scraping) z portálu ČNB OAM, stahování příloh a extrakci textu.</li>
+                <li>Návrh a trénování klasifikačních modelů pro rozřazování dokumentů do 12 aktivních kategorií.</li>
+                <li>Nasazení velkého jazykového modelu prostřednictvím univerzitního serveru Ollama.</li>
+                <li>Validaci shody mezi deklarovanou kategorií dokumentu a jeho skutečným obsahem.</li>
+            </ul>
+        </section>
+
+        <!-- SECTION 2: TEORETICKÉ ZÁZEMÍ -->
+        <section id="teorie">
+            <h2><i class="fa-solid fa-book"></i> 2. Teoretické zázemí</h2>
+            <p>
+                Klasifikace textu je standardní úlohou zpracování přirozeného jazyka (NLP). V tomto projektu porovnáváme tři hlavní směry pro klasifikaci dokumentů.
+            </p>
+            
+            <div class="grid-3">
+                <div class="card">
+                    <div class="card-icon"><i class="fa-solid fa-gears"></i></div>
+                    <div class="card-title">Pravidlový systém</div>
+                    <div class="card-desc">Funguje na principu vyhledávání klíčových slov a regulárních výrazů. Pro každou kategorii je definována sada charakteristických českých a anglických termínů. Je velmi rychlý a deterministický.</div>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fa-solid fa-calculator"></i></div>
+                    <div class="card-title">Statistické ML modely</div>
+                    <div class="card-desc">Texty jsou převedeny na numerické vektory pomocí TF-IDF reprezentace. Na tyto vektory jsou aplikovány tři klasické ML algoritmy: <strong>Support Vector Machines (SVM)</strong>, <strong>Logistická regrese (LR)</strong> a <strong>Náhodné lesy (RF)</strong>.</div>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fa-solid fa-brain"></i></div>
+                    <div class="card-title">Velké jazykové modely (LLM)</div>
+                    <div class="card-desc">Zero-shot a few-shot zařazení dokumentů bez lokálního trénování pomocí LLM modelů běžících na serveru Ollama. Model analyzuje sémantiku textu a zařazuje jej do cílových kategorií.</div>
+                </div>
+            </div>
+
+            <h3>Využití velkých jazykových modelů (LLM)</h3>
+            <p>
+                Velké jazykové modely založené na architektuře Transformer dosahují vynikajících výsledků v úlohách porozumění textu. V naší práci využíváme model běžící na univerzitním Ollama serveru.
+            </p>
+            <p>
+                Tento model je dotazován pomocí strukturovaného promptu v češtině, který specifikuje dostupné kategorie a pravidla pro zařazení. Model je instruován, aby odpověděl ve formátu JSON obsahujícím klíče <code>category</code> a <code>reason</code> (odůvodnění predikce). Používáme zero-shot (bez příkladů) nebo few-shot (s několika málo příklady v promptu) přístup. Tím odpadá nutnost trénování parametrů modelu na lokálním hardwaru.
+            </p>
+        </section>
+
+        <!-- SECTION 3: PRAKTICKÁ IMPLEMENTACE -->
+        <section id="implementace">
+            <h2><i class="fa-solid fa-code"></i> 3. Praktická implementace</h2>
+            <p>
+                Softwarový systém je napsán v jazyce Python 3 a skládá se ze tří hlavních modulů: scraperu, předzpracování textu a klasifikátoru.
+            </p>
+
+            <h3>1. Sběr dat</h3>
+            <p>
+                Pro účely získání datasetu byl vytvořen scraper využívající knihovnu Playwright, který automaticky stahuje dokumenty z portálu ČNB OAM a parsuje jejich obsah.
+            </p>
+
+            <h3>2. Předzpracování textu (Head-Tail Truncation)</h3>
+            <p>
+                Klasifikované PDF soubory, naskenované dokumenty převedené přes OCR nebo ZIP archivy mohou být extrémně dlouhé (stovky stran). Většina klíčových informací o kategorii (jako je název dokumentu, např. „Výroční zpráva“, „Pozvánka...“) se nachází na první straně (hlavička) nebo na samotném konci (podpisy a schválení).
+            </p>
+            <p>
+                Pro snížení šumu a splnění limitu kontextového okna transformerů jsme implementovali metodu <strong>ořezávání hlavy a paty (head-tail truncation)</strong>. Pokud text dokumentu překročí 20 000 znaků, zachováme prvních 15 000 znaků a posledních 5 000 znaků a prostřední část textu zahodíme.
+            </p>
+
+            <h3>3. Integrace s Ollama API</h3>
+            <p>
+                Modul <code>OllamaLLMClassifier</code> zajišťuje integraci a dotazování velkého jazykového modelu přes REST API na vzdáleném serveru Ollama.
+            </p>
+
+            <h3>4. Statistiky datasetu a rozdělení dat (Train / Val / Test)</h3>
+            <p>
+                Pro přehlednost a ověření správnosti rozvrstvení (stratifikace) uvádíme podrobné statistiky o počtu dokumentů v jednotlivých splitech a jejich rozdělení do 12 sledovaných kategorií:
+            </p>
+            {{ dataset_stats_html }}
+        </section>
+
+        <!-- SECTION 4: SROVNÁNÍ VÝSLEDKŮ -->
+        <section id="srovnani">
+            <h2><i class="fa-solid fa-chart-simple"></i> 4. Srovnání výsledků</h2>
+            <p>
+                {{ overall_performance_summary }}
+            </p>
+
+            <!-- Dashboard -->
+            <div class="dashboard-container">
+                <div class="dashboard-tabs">
+                    <button class="tab-btn active" onclick="switchMetric('accuracy')">Přesnost (Accuracy)</button>
+                    <button class="tab-btn" onclick="switchMetric('macroF1')">Macro F1</button>
+                    <button class="tab-btn" onclick="switchMetric('weightedF1')">Weighted F1</button>
+                </div>
+                
+                <div class="dashboard-content">
+                    <!-- Left: Interactive Chart -->
+                    <div class="chart-wrapper">
+                        <div class="chart-title" id="chart-title-text">Srovnání celkové přesnosti (Accuracy)</div>
+                        <div id="interactive-bars">
+                            <!-- Bars will be injected by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Right: Model Details -->
+                    <div style="display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <h4 style="margin-bottom: 0.5rem;" id="selected-model-name">TF-IDF + SVM (Linear)</h4>
+                            <p style="font-size: 0.9rem; margin-bottom: 1rem;" id="selected-model-desc">Lineární Support Vector Machine vykazuje nejlepší celkovou úspěšnost. Těží z robustního hledání oddělující nadroviny ve vysokodimenzionálním textovém prostoru slovních n-gramů.</p>
+                        </div>
+                        
+                        <div class="table-container" style="margin: 0;">
+                            <table style="font-size: 0.85rem;">
+                                <thead>
+                                    <tr>
+                                        <th>Metoda</th>
+                                        <th style="text-align: right;">Acc</th>
+                                        <th style="text-align: right;">Macro F1</th>
+                                        <th style="text-align: right;">W. F1</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr id="row-rule" onclick="selectModel('rule')" style="cursor: pointer;">
+                                        <td>Rule-based (Pravidla)</td>
+                                        <td style="text-align: right; font-family: monospace;">0.714</td>
+                                        <td style="text-align: right; font-family: monospace;">0.486</td>
+                                        <td style="text-align: right; font-family: monospace;">0.697</td>
+                                    </tr>
+                                    <tr id="row-logreg" onclick="selectModel('logreg')" style="cursor: pointer;">
+                                        <td>TF-IDF + Logistická regrese</td>
+                                        <td style="text-align: right; font-family: monospace;">0.878</td>
+                                        <td style="text-align: right; font-family: monospace;">0.716</td>
+                                        <td style="text-align: right; font-family: monospace;">0.878</td>
+                                    </tr>
+                                    <tr id="row-rf" onclick="selectModel('rf')" style="cursor: pointer;">
+                                        <td>TF-IDF + Náhodný les</td>
+                                        <td style="text-align: right; font-family: monospace;">0.939</td>
+                                        <td style="text-align: right; font-family: monospace;">0.831</td>
+                                        <td style="text-align: right; font-family: monospace;">0.939</td>
+                                    </tr>
+                                    <tr id="row-svm" onclick="selectModel('svm')" style="cursor: pointer;" class="highlight-row">
+                                        <td>TF-IDF + SVM (Linear)</td>
+                                        <td style="text-align: right; font-family: monospace;">0.947</td>
+                                        <td style="text-align: right; font-family: monospace;">0.834</td>
+                                        <td style="text-align: right; font-family: monospace;">0.948</td>
+                                    </tr>
+                                     <tr id="row-ollama" onclick="selectModel('ollama')" style="cursor: pointer;">
+                                         <td>Ollama LLM (Gemma 3)</td>
+                                         <td style="text-align: right; font-family: monospace;">0.635</td>
+                                         <td style="text-align: right; font-family: monospace;">0.547</td>
+                                         <td style="text-align: right; font-family: monospace;">0.629</td>
+                                     </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Confusion Matrix Tab -->
+            <h3>Interaktivní Matice Záměn (Confusion Matrix)</h3>
+            <p style="margin-bottom: 1.5rem;">
+                Vyberte model pomocí přepínačů níže a přejeďte myší přes buňky matice záměn pro zobrazení detailů chyb mezi skutečnými (true) a predikovanými třídami. Tmavší barva reprezentuje vyšší počet dokumentů.
+            </p>
+            
+            <div class="matrix-container" style="display: flex; flex-direction: column; align-items: center;">
+                <!-- Model Switcher for Confusion Matrix -->
+                <div class="matrix-switcher" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn matrix-switch-btn" onclick="selectModel('rule')" id="matrix-btn-rule">Pravidlový systém</button>
+                    <button class="btn matrix-switch-btn" onclick="selectModel('logreg')" id="matrix-btn-logreg">TF-IDF + Logistická regrese</button>
+                    <button class="btn matrix-switch-btn" onclick="selectModel('rf')" id="matrix-btn-rf">TF-IDF + Náhodný les</button>
+                    <button class="btn matrix-switch-btn" onclick="selectModel('svm')" id="matrix-btn-svm">TF-IDF + SVM (Linear)</button>
+                    <button class="btn matrix-switch-btn" onclick="selectModel('ollama')" id="matrix-btn-ollama">Ollama LLM (Gemma 3)</button>
+                </div>
+                
+                <div class="matrix-grid" id="matrix-grid-element">
+                    <!-- Grid cells will be generated by JS -->
+                </div>
+                <div class="matrix-tooltip" id="matrix-tooltip-element">
+                    Přejeďte myší přes buňky matice záměn pro zobrazení detailů predikcí.
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: INTERAKTIVNÍ TESTOVÁNÍ -->
+        <section id="testovani" class="sandbox-container">
+            <h2><i class="fa-solid fa-vial"></i> 5. Interaktivní testování (Sandbox)</h2>
+            <p>
+                Otestujte si pravidlový klasifikátor v reálném čase. Vložte vlastní český text dokumentu nebo načtěte jednu z připravených ukázek a systém okamžitě spočítá frekvenci výskytu charakteristických klíčových slov.
+            </p>
+            
+            <div class="sandbox-controls">
+                <button class="btn" onclick="loadSample('valna')">Ukázka: Valná hromada</button>
+                <button class="btn" onclick="loadSample('vyrocni')">Ukázka: Výroční zpráva</button>
+                <button class="btn" onclick="loadSample('vnitrni')">Ukázka: Vnitřní informace</button>
+                <button class="btn" onclick="loadSample('emise')">Ukázka: Emise dluhopisů</button>
+                <button class="btn" onclick="clearText()">Vymazat</button>
+            </div>
+
+            <textarea id="sandbox-textarea" placeholder="Zde napište nebo vložte text dokumentu pro testování klasifikátoru..."></textarea>
+
+            <div class="sandbox-results">
+                <div class="result-panel">
+                    <h4><i class="fa-solid fa-gauge-high"></i> Predikovaný typ zprávy</h4>
+                    <div class="result-value" id="sandbox-predicted-class">Zadejte text...</div>
+                    <div class="result-confidence" id="sandbox-score-text">Nejvyšší skóre shody: 0</div>
+                </div>
+                <div class="result-panel">
+                    <h4><i class="fa-solid fa-list-check"></i> Detekovaná klíčová slova</h4>
+                    <div class="keyword-matches" id="sandbox-keywords-list">
+                        <span style="color: var(--text-muted); font-size: 0.85rem;">Žádná klíčová slova nenalezena</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 6: ZÁVĚR -->
+        <section id="zaver">
+            <h2><i class="fa-solid fa-flag-checkered"></i> 6. Závěr a doporučení</h2>
+            {{ ml_performance_analysis }}
+        </section>
+
+        <footer>
+            &copy; 2026 Západočeská univerzita v Plzni. Projekt Validace a Klasifikace ČNB OAM.
+        </footer>
+    </main>
+
+    <!-- JavaScript logic -->
+    <script>
+        // Data sets
+        {{ metrics_data_js }}
+
+        {{ model_meta_js }}
+
+        const categoriesList = [
+            "Oznámení o valné hromadě",
+            "Informace k valné hromadě",
+            "Emise dluhopisů",
+            "Výroční finanční zpráva",
+            "Pololetní finanční zpráva",
+            "Vnitřní informace",
+            "Podíl na hlasovacích právech",
+            "Kapitál a hlasovací práva",
+            "Schůze vlastníků",
+            "Nabytí/pozbytí vlastních akcií",
+            "Úhrady placené státu",
+            "Nefinanční informace"
+        ];
+
+        let currentMetric = 'accuracy';
+        let currentModel = 'svm';
+
+        // Update table cells from metricsData dynamically
+        function updateTableValues() {
+            const models = ['rule', 'logreg', 'rf', 'svm', 'ollama'];
+            models.forEach(model => {
+                const row = document.getElementById(`row-${model}`);
+                if (row) {
+                    const cells = row.getElementsByTagName('td');
+                    if (cells.length >= 4) {
+                        cells[1].innerText = metricsData.accuracy[model].toFixed(3);
+                        cells[2].innerText = metricsData.macroF1[model].toFixed(3);
+                        cells[3].innerText = metricsData.weightedF1[model].toFixed(3);
+                    }
+                }
+            });
+        }
+
+        // Initialize dashboard UI
+        function initDashboard() {
+            updateTableValues();
+            selectModel(currentModel);
+            renderChart();
+        }
+
+        // Switch active tab metric
+        function switchMetric(metric) {
+            currentMetric = metric;
+            
+            // UI tab update
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            const activeIndex = metric === 'accuracy' ? 0 : (metric === 'macroF1' ? 1 : 2);
+            document.querySelectorAll('.tab-btn')[activeIndex].classList.add('active');
+            
+            document.getElementById('chart-title-text').innerText = `Srovnání celkové úspěšnosti (${metric === 'accuracy' ? 'Accuracy' : (metric === 'macroF1' ? 'Macro F1' : 'Weighted F1')})`;
+            
+            renderChart();
+        }
+
+        // Select a model from the table or switcher
+        function selectModel(modelId) {
+            currentModel = modelId;
+            
+            // Highlight row in table
+            document.querySelectorAll('tbody tr').forEach(row => row.classList.remove('highlight-row'));
+            const targetRow = document.getElementById(`row-${modelId}`);
+            if (targetRow) {
+                targetRow.classList.add('highlight-row');
+            }
+            
+            // Highlight active button in confusion matrix switcher
+            document.querySelectorAll('.matrix-switch-btn').forEach(btn => btn.classList.remove('active'));
+            const targetBtn = document.getElementById(`matrix-btn-${modelId}`);
+            if (targetBtn) {
+                targetBtn.classList.add('active');
+            }
+            
+            // Update details
+            if (modelMeta[modelId]) {
+                document.getElementById('selected-model-name').innerText = modelMeta[modelId].name;
+                document.getElementById('selected-model-desc').innerText = modelMeta[modelId].desc;
+            }
+            
+            renderMatrix();
+        }
+
+        // Render the SVG bar chart
+        function renderChart() {
+            const container = document.getElementById('interactive-bars');
+            container.innerHTML = '';
+            
+            const models = ['rule', 'logreg', 'rf', 'svm', 'ollama'];
+            const labels = {
+                rule: 'Pravidlový systém',
+                logreg: 'TF-IDF + Logistická regrese',
+                rf: 'TF-IDF + Náhodný les',
+                ollama: 'Ollama LLM (Gemma 3)',
+                svm: 'TF-IDF + SVM (Linear)'
+            };
+            
+            models.forEach(model => {
+                const val = metricsData[currentMetric][model];
+                const pct = (val * 100).toFixed(1) + '%';
+                
+                const group = document.createElement('div');
+                group.className = 'bar-group';
+                
+                const label = document.createElement('div');
+                label.className = 'bar-label';
+                label.innerText = labels[model];
+                
+                const barContainer = document.createElement('div');
+                barContainer.className = 'bar-container';
+                
+                const barFill = document.createElement('div');
+                barFill.className = 'bar-fill';
+                // Trigger CSS width transition
+                setTimeout(() => {
+                    barFill.style.width = (val * 100) + '%';
+                }, 50);
+                
+                const valEl = document.createElement('div');
+                valEl.className = 'bar-value';
+                valEl.innerText = val.toFixed(3);
+                
+                barContainer.appendChild(barFill);
+                group.appendChild(label);
+                group.appendChild(barContainer);
+                group.appendChild(valEl);
+                container.appendChild(group);
+            });
+        }
+
+        // Render the confusion matrix grid
+        function renderMatrix() {
+            const grid = document.getElementById('matrix-grid-element');
+            grid.innerHTML = '';
+            
+            const matrix = modelMeta[currentModel].cm;
+            const rowTotals = matrix.map(row => row.reduce((a, b) => a + b, 0));
+            
+            for (let r = 0; r < 12; r++) {
+                for (let c = 0; c < 12; c++) {
+                    const cellVal = matrix[r][c];
+                    const cell = document.createElement('div');
+                    cell.className = 'matrix-cell';
+                    
+                    // Shading calculations based on accuracy/misclassifications
+                    let intensity = 0;
+                    if (r === c) {
+                        // Diagonal (correct predictions)
+                        const pct = rowTotals[r] > 0 ? (cellVal / rowTotals[r]) : 0;
+                        intensity = Math.round(pct * 180 + 30); // 30 - 210
+                        cell.style.backgroundColor = `rgba(37, 99, 235, ${pct})`; // blue shade
+                        cell.style.color = pct > 0.5 ? 'white' : 'var(--text-primary)';
+                    } else {
+                        // Off-diagonal (incorrect predictions)
+                        const pct = rowTotals[r] > 0 ? (cellVal / rowTotals[r]) : 0;
+                        intensity = Math.round(pct * 255);
+                        cell.style.backgroundColor = `rgba(239, 68, 68, ${pct * 2})`; // red shade for mistakes
+                        cell.style.color = 'var(--text-primary)';
+                    }
+                    
+                    cell.innerText = cellVal;
+                    
+                    // Add mouse hover details
+                    cell.onmouseover = () => {
+                        const tooltip = document.getElementById('matrix-tooltip-element');
+                        tooltip.innerHTML = `
+                            <strong>Skutečná třída:</strong> ${categoriesList[r]} <br/>
+                            <strong>Predikovaná třída:</strong> ${categoriesList[c]} <br/>
+                            <strong>Počet případů:</strong> ${cellVal} ${r === c ? '(<span style="color:green; font-weight:bold;">Správně</span>)' : '(<span style="color:red; font-weight:bold;">Chyba</span>)'}
+                        `;
+                    };
+                    
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        // Sandbox live tester logic (simplified Czech keyword rule engine)
+        const ruleKeywords = {
+            "Oznámení o valné hromadě": ["valná hromada", "valné hromady", "akcionář", "hlasování", "program jednání", "pozvánka"],
+            "Informace k valné hromadě": ["usnesení valné", "výsledky hlasování", "rozhodnutí valné", "protokol z valné"],
+            "Emise dluhopisů": ["dluhopis", "emise dluhopisů", "prospekt dluhopisů", "jmenovitá hodnota", "úrokový výnos"],
+            "Výroční finanční zpráva": ["výroční zpráva", "účetní závěrka", "zpráva auditora", "rozvaha", "výkaz zisku a ztráty", "auditor"],
+            "Pololetní finanční zpráva": ["pololetní zpráva", "pololetní účetní", "mezitímní", "k 30. červnu", "první pololetí"],
+            "Vnitřní informace": ["vnitřní informace", "inside information", "insider", "oznámení emitenta", "akvizice", "dividenda"],
+            "Podíl na hlasovacích právech": ["hlasovací práva", "oznámení podílu", "podíl na hlasovacích", "významný podíl"],
+            "Kapitál a hlasovací práva": ["základní kapitál", "celkový počet hlasovacích", "počet akcií", "výše základního"],
+            "Schůze vlastníků": ["schůze vlastníků", "vlastníci dluhopisů", "společná schůze", "usnesení schůze"],
+            "Nabytí/pozbytí vlastních akcií": ["vlastní akcie", "zpětný odkup", "odkup vlastních", "nabytí vlastních"],
+            "Úhrady placené státu": ["zpráva o platbách", "platby státu", "těžební", "státní správa"],
+            "Nefinanční informace": ["nefinanční informace", "udržitelnost", "ESG", "zpráva o udržitelnosti", "životní prostředí"]
+        };
+
+        const sandboxTextarea = document.getElementById('sandbox-textarea');
+        
+        sandboxTextarea.addEventListener('input', runSandboxClassifier);
+
+        function runSandboxClassifier() {
+            const text = sandboxTextarea.value.toLowerCase();
+            if (!text.trim()) {
+                document.getElementById('sandbox-predicted-class').innerText = 'Zadejte text...';
+                document.getElementById('sandbox-score-text').innerText = 'Nejvyšší skóre shody: 0';
+                document.getElementById('sandbox-keywords-list').innerHTML = '<span style="color: var(--text-muted); font-size: 0.85rem;">Žádná klíčová slova nenalezena</span>';
+                return;
+            }
+
+            let bestClass = "Ostatní / Neurčeno";
+            let bestScore = 0;
+            let matchedKeywords = [];
+
+            Object.entries(ruleKeywords).forEach(([className, keywords]) => {
+                let score = 0;
+                keywords.forEach(kw => {
+                    const regex = new RegExp(kw, 'g');
+                    const matches = text.match(regex);
+                    if (matches) {
+                        score += matches.length;
+                        matchedKeywords.push({ word: kw, count: matches.length });
+                    }
+                });
+                
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestClass = className;
+                }
+            });
+
+            // Update UI results
+            document.getElementById('sandbox-predicted-class').innerText = bestClass;
+            document.getElementById('sandbox-score-text').innerText = `Nejvyšší skóre shody: ${bestScore}`;
+
+            const kwList = document.getElementById('sandbox-keywords-list');
+            kwList.innerHTML = '';
+            if (matchedKeywords.length === 0) {
+                kwList.innerHTML = '<span style="color: var(--text-muted); font-size: 0.85rem;">Žádná klíčová slova nenalezena</span>';
+            } else {
+                // Deduplicate and render
+                const uniqueMatched = {};
+                matchedKeywords.forEach(item => {
+                    uniqueMatched[item.word] = (uniqueMatched[item.word] || 0) + item.count;
+                });
+                Object.entries(uniqueMatched).forEach(([word, count]) => {
+                    const pill = document.createElement('span');
+                    pill.className = 'keyword-pill';
+                    pill.innerHTML = `<i class="fa-solid fa-tag"></i> ${word} (${count}x)`;
+                    kwList.appendChild(pill);
+                });
+            }
+        }
+
+        const samples = {
+            valna: `POZVÁNKA NA ŘÁDNOU VALNOU HROMADU
+Společnosti ČEZ, a. s., se sídlem Praha 4, Duhová 2/1444, PSČ 140 53, IČO: 45274649, zapsané v obchodním rejstříku vedeném Městským soudem v Praze, oddíl B, vložka 1581. Představenstvo společnosti svolává řádnou valnou hromadu, která se bude konat dne 24. června 2026 od 9:00 hodin.
+Program jednání valné hromady:
+1. Zahájení, volba orgánů valné hromady.
+2. Zpráva představenstva o podnikatelské činnosti společnosti a o stavu jejího majetku.
+3. Schválení účetní závěrky společnosti ČEZ, a. s. a konsolidované účetní závěrky skupiny ČEZ za rok 2025.
+4. Rozhodnutí o rozdělení zisku společnosti ČEZ, a. s. za rok 2025 a stanovení dividendy na jednu akcii.
+K účasti na valné hromadě jsou oprávněni všichni akcionáři vlastnící akcie společnosti. Hlasování bude probíhat prostřednictvím hlasovacích lístků.`,
+            vyrocni: `VÝROČNÍ ZPRÁVA SKUPINY ORLEN UNIPETROL ZA ROK 2025
+Úvodní slovo předsedy představenstva: Vážení akcionáři a obchodní partneři, předkládáme vám výroční zprávu naší společnosti za účetní období roku 2025.
+Zpráva nezávislého auditora pro akcionáře společnosti ORLEN Unipetrol, a.s.:
+Provedli jsme audit přiložené konsolidované účetní závěrky společnosti, která se skládá z rozvahy k 31. prosinci 2025, výkazu zisku a ztráty a přehledu o peněžních tocích za rok 2025. Podle našeho názoru účetní závěrka podává věrný a poctivý obraz finanční pozice skupiny Unipetrol.
+Finanční výsledky a hospodaření: Provozní zisk EBITDA dosáhl výše 4,2 miliardy Kč. V průběhu roku jsme investovali do modernizace rafinérských a petrochemických provozů.`,
+            vnitrni: `VNITŘNÍ INFORMACE (INSIDE INFORMATION)
+Rozhodnutí o výplatě dividendy za rok 2025. Emitent Komerční banka, a.s. tímto oznamuje vnitřní informaci týkající se schválení návrhu na výplatu dividendy představenstvem společnosti. 
+Představenstvo schválilo návrh na výplatu dividendy ve výši 60 Kč na jednu akcii před zdaněním. Celkový objem prostředků určených na výplatu dividend činí 11,4 miliardy Kč.
+Tato vnitřní informace je uveřejněna v souladu s Nařízením Evropského parlamentu a Rady (EU) č. 596/2014 o zneužívání trhu. Kontakty pro média a investory jsou uvedeny na webových stránkách banky.`,
+            emise: `DOPLNĚK PROSPEKTU DLUHOPISŮ
+Společnost CPI Property Group S.A. oznamuje uveřejnění prospektu emise dluhopisů v celkové jmenovité hodnotě 5 000 000 000 Kč s pevným úrokovým výnosem ve výši 5,85 % p.a. splatných v roce 2031.
+Dluhopisy budou vydány jako zaknihované cenné papíry v centrální evidenci CDCP. Výnosy z prodeje dluhopisů budou použity na refinancování stávajícího zadlužení emitenta a rozvoj realitního portfolia. Prospekt byl schválen Českou národní bankou.`
+        };
+
+        function loadSample(key) {
+            sandboxTextarea.value = samples[key];
+            runSandboxClassifier();
+        }
+
+        function clearText() {
+            sandboxTextarea.value = '';
+            runSandboxClassifier();
+        }
+
+        // Theme Toggle Logic
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            
+            // Icon change
+            const icon = themeToggleBtn.querySelector('i');
+            if (newTheme === 'dark') {
+                icon.className = 'fa-solid fa-sun';
+            } else {
+                icon.className = 'fa-solid fa-moon';
+            }
+        });
+
+        // Initialize dashboard on page load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initDashboard);
+        } else {
+            initDashboard();
+        }
+    </script>
+</body>
+</html>

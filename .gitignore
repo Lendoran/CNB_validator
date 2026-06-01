@@ -11,6 +11,10 @@ dist/
 build/
 .eggs/
 *.egg
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
 
 # Virtual environments
 .venv/

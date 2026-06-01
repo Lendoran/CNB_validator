@@ -326,6 +326,25 @@
             margin: 2rem 0;
         }
 
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        @media (max-width: 1200px) {
+            .grid-4 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .grid-4 {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .card {
             background-color: var(--bg-secondary);
             border: 1px solid var(--border-color);
@@ -893,7 +912,7 @@
         }
 
         /* Responsive adjustments */
-        @media (max-width: 900px) {
+        @media (max-width: 1024px) {
             body {
                 flex-direction: column;
             }
@@ -903,25 +922,82 @@
                 width: 100%;
                 border-right: none;
                 border-bottom: 1px solid var(--border-color);
-                padding: 1.5rem;
+                padding: 1.25rem 1.5rem;
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
             }
 
             .logo-area {
-                margin-bottom: 1.5rem;
+                margin-bottom: 0;
             }
 
+            /* Horizontal scrollable navigation tab bar on mobile */
             .nav-links {
-                display: none;
-                /* Hide in mobile sidebar for space */
+                display: flex;
+                flex-direction: row;
+                overflow-x: auto;
+                width: 100%;
+                gap: 0.5rem;
+                padding: 0.25rem 0;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none; /* Firefox */
+            }
+
+            .nav-links::-webkit-scrollbar {
+                display: none; /* Safari/Chrome */
+            }
+
+            .nav-links a {
+                white-space: nowrap;
+                padding: 0.5rem 0.85rem;
+                font-size: 0.85rem;
+                border-radius: var(--radius-sm);
+            }
+
+            .theme-toggle-area {
+                border-top: none;
+                padding-top: 0;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+                margin-top: 0.5rem;
+                border-top: 1px solid var(--border-color);
+                padding-top: 0.75rem;
             }
 
             main {
                 margin-left: 0;
-                padding: 2rem;
+                padding: 2rem 1.25rem;
             }
 
             .abstract-container {
                 grid-template-columns: 1fr;
+                gap: 1.5rem;
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .matrix-switch-btn {
+                font-size: 0.75rem !important;
+                padding: 0.4rem 0.65rem !important;
+            }
+            .dashboard-tabs {
+                flex-wrap: wrap;
+            }
+            .tab-btn {
+                padding: 0.4rem 0.85rem;
+                font-size: 0.85rem;
+            }
+            .bar-label {
+                width: 130px;
+                font-size: 0.75rem;
+            }
+            .bar-value {
+                width: 40px;
+                font-size: 0.75rem;
             }
         }
     </style>
@@ -964,20 +1040,26 @@
             <div class="subtitle">Vyhodnocení metod strojového učení, hlubokého učení (BERT) a velkých jazykových modelů
                 (LLM) na českém korpusu</div>
 
-            <div class="author-box"
-                style="display: flex; align-items: center; gap: 1rem; margin-top: 1.5rem; padding: 1rem 1.25rem; background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); max-width: max-content;">
-                <div class="logo-icon"
-                    style="border-radius: 50%; font-size: 1.15rem; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--accent-gradient); color: white;">
-                    <i class="fa-solid fa-user-graduate"></i>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: stretch; margin-top: 1.5rem;">
+                <div class="author-box"
+                    style="display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); max-width: max-content; margin-top: 0;">
+                    <div class="logo-icon"
+                        style="border-radius: 50%; font-size: 1.15rem; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--accent-gradient); color: white;">
+                        <i class="fa-solid fa-user-graduate"></i>
+                    </div>
+                    <div class="author-info">
+                        <div class="author-name" style="font-weight: 700; font-size: 1.05rem; color: var(--text-primary);">
+                            Martin Horešovský</div>
+                        <div class="author-dept" style="font-size: 0.85rem; color: var(--text-secondary);">Semestrální práce
+                            předmětu <strong>PUIA5</strong></div>
+                        <div class="author-univ" style="font-size: 0.8rem; color: var(--text-muted);">Fakulta aplikovaných
+                            věd (FAV) ZČU, Katedra kybernetiky (KKY)</div>
+                    </div>
                 </div>
-                <div class="author-info">
-                    <div class="author-name" style="font-weight: 700; font-size: 1.05rem; color: var(--text-primary);">
-                        Martin Horešovský</div>
-                    <div class="author-dept" style="font-size: 0.85rem; color: var(--text-secondary);">Semestrální práce
-                        předmětu <strong>PUIA5</strong></div>
-                    <div class="author-univ" style="font-size: 0.8rem; color: var(--text-muted);">Fakulta aplikovaných
-                        věd (FAV) ZČU, Katedra kybernetiky (KKY)</div>
-                </div>
+                <a href="https://github.com/Lendoran/CNB_validator" target="_blank" class="github-btn" style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.25rem; background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); color: var(--text-primary); text-decoration: none; font-weight: 600; transition: var(--transition);">
+                    <i class="fa-brands fa-github" style="font-size: 1.5rem;"></i>
+                    Zdrojový kód (GitHub)
+                </a>
             </div>
         </header>
 
@@ -1048,8 +1130,7 @@
                 čtyři hlavní směry pro klasifikaci dokumentů.
             </p>
 
-            <div class="grid-4"
-                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin: 2rem 0;">
+            <div class="grid-4">
                 <div class="card">
                     <div class="card-icon"><i class="fa-solid fa-gears"></i></div>
                     <div class="card-title">Pravidlový systém</div>
@@ -1485,6 +1566,9 @@
             <p>
                 Jako hlavní směr budoucího rozvoje se nabízí hybridní přístup: využití statistického modelu SVM či Czech BERT pro rychlou a vysoce přesnou prvotní filtraci a klasifikaci, a následné nasazení pokročilých LLM k detailní analýze a slovnímu vysvětlení (explainability) u sporných případů, kde je detekován nesoulad (mismatch) mezi deklarovanou a predikovanou třídou dokumentu.
             </p>
+            <p style="margin-top: 1rem;">
+                Kompletní zdrojové kódy projektu, implementace jednotlivých modelů a návod k použití CLI utility jsou k dispozici v <a href="https://github.com/Lendoran/CNB_validator" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 600;">repozitáři na GitHubu <i class="fa-brands fa-github"></i></a>.
+            </p>
         </section>
 
         <footer>
@@ -1495,9 +1579,143 @@
     <!-- JavaScript logic -->
     <script>
         // Data sets
-        { { metrics_data_js } }
+        const metricsData = {
+            accuracy: {
+                rule: 0.722,
+                logreg: 0.898,
+                rf: 0.933,
+                svm: 0.950,
+                ollama: 0.662,
+                czech_bert: 0.947
+            },
+            macroF1: {
+                rule: 0.488,
+                logreg: 0.760,
+                rf: 0.734,
+                svm: 0.788,
+                ollama: 0.520,
+                czech_bert: 0.681
+            },
+            weightedF1: {
+                rule: 0.724,
+                logreg: 0.908,
+                rf: 0.930,
+                svm: 0.949,
+                ollama: 0.678,
+                czech_bert: 0.944
+            }
+        };
 
-        { { model_meta_js } }
+        const modelMeta = {
+            rule: {
+                name: "Rule-based (Slovníkový klasifikátor)",
+                desc: "Pravidlový systém zařazuje dokumenty podle četnosti vybraných klíčových slov pro každou kategorii. Je velmi rychlý, ale nepružný vůči synonymům a jazykové variabilitě.",
+                cm: [
+                    [48, 10, 0, 1, 0, 11, 1, 0, 0, 0, 0, 2],
+                    [30, 4, 0, 2, 0, 7, 1, 0, 0, 0, 0, 0],
+                    [0, 0, 163, 2, 0, 4, 0, 0, 0, 0, 0, 0],
+                    [0, 1, 6, 42, 0, 1, 0, 1, 0, 0, 0, 2],
+                    [0, 0, 14, 0, 36, 0, 0, 0, 0, 0, 0, 1],
+                    [16, 13, 40, 10, 6, 220, 12, 2, 0, 16, 0, 13],
+                    [0, 0, 0, 0, 0, 2, 101, 0, 0, 0, 0, 0],
+                    [0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0],
+                    [0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 3]
+                ]
+            },
+            logreg: {
+                name: "TF-IDF + Logistická regrese",
+                desc: "Klasická logistická regrese trénovaná na TF-IDF vektorech n-gramů. Vykazuje dobrou stabilitu na menších datech, ale může podhodnocovat méně zastoupené třídy.",
+                cm: [
+                    [60, 9, 0, 0, 0, 3, 0, 0, 1, 0, 0, 0],
+                    [4, 36, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 159, 2, 0, 6, 0, 0, 2, 0, 0, 0],
+                    [0, 0, 0, 52, 0, 0, 0, 0, 0, 0, 0, 1],
+                    [0, 0, 0, 0, 51, 0, 0, 0, 0, 0, 0, 0],
+                    [5, 13, 3, 2, 10, 310, 0, 4, 1, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 2, 89, 0, 0, 12, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0],
+                    [0, 0, 1, 0, 0, 0, 0, 0, 4, 0, 0, 1],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0],
+                    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 3]
+                ]
+            },
+            rf: {
+                name: "TF-IDF + Náhodný les (Random Forest)",
+                desc: "Ansámblový klasifikátor složený z mnoha nezávislých rozhodovacích stromů. Je robustní proti přetrénování, ale u dlouhých textů může ztrácet jemnější sémantické souvislosti.",
+                cm: [
+                    [62, 3, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0],
+                    [4, 32, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 157, 0, 0, 12, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 52, 0, 1, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 49, 2, 0, 0, 0, 0, 0, 0],
+                    [2, 2, 2, 1, 0, 341, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 2, 101, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 3, 0, 1, 0, 0, 0, 0],
+                    [0, 0, 2, 0, 0, 2, 0, 0, 2, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0],
+                    [0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 1]
+                ]
+            },
+            svm: {
+                name: "TF-IDF + SVM (Linear Support Vector Machine)",
+                desc: "Lineární SVM trénovaný na n-gramech dosáhl nejlepších celkových výsledků. Hledá optimální nadrovinu s největší marží, což skvěle funguje v řídkých a rozměrných textových vektorech.",
+                cm: [
+                    [65, 5, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0],
+                    [5, 33, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 163, 0, 0, 6, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 53, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 50, 1, 0, 0, 0, 0, 0, 0],
+                    [1, 4, 2, 1, 0, 340, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 2, 101, 0, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 1, 0, 2, 0, 0, 0, 0],
+                    [0, 0, 2, 0, 0, 0, 0, 0, 3, 0, 0, 1],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0],
+                    [0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 2]
+                ]
+            },
+            ollama: {
+                name: "Ollama LLM (Gemma 3 12B)",
+                desc: "Velký jazykový model dotazovaný v zero-shot a few-shot režimu. Vykazuje výborné zobecnění a porozumění kontextu v češtině bez dotrénování, ale komunikace přes API je pomalejší než lokální modely.",
+                cm: [
+                    [69, 3, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [15, 16, 0, 0, 0, 0, 0, 7, 0, 2, 4, 0],
+                    [0, 0, 165, 2, 0, 2, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 52, 0, 0, 0, 0, 0, 0, 0, 1],
+                    [0, 0, 1, 0, 50, 0, 0, 0, 0, 0, 0, 0],
+                    [9, 19, 35, 42, 42, 159, 7, 6, 0, 28, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 28, 0, 0, 45, 0, 0],
+                    [0, 0, 1, 0, 0, 0, 0, 2, 0, 1, 0, 0],
+                    [2, 0, 2, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0],
+                    [0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 2]
+                ]
+            },
+            czech_bert: {
+                name: "Czech BERT (RobeCzech)",
+                desc: "Lokálně fine-tunovaný český transformer model založený na architektuře RoBERTa. Výborně rozumí kontextu, české sémantice a syntaxi vět.",
+                cm: [
+                    [66, 6, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [3, 38, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0],
+                    [0, 0, 161, 1, 0, 7, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 53, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 51, 0, 0, 0, 0, 0, 0, 0],
+                    [1, 5, 3, 0, 0, 338, 0, 1, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 2, 101, 0, 0, 0, 0, 0],
+                    [0, 2, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0],
+                    [0, 2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+                    [0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2]
+                ]
+            }
+        };
 
         const categoriesList = [
             "Oznámení o valné hromadě",

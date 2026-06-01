@@ -1,5 +1,7 @@
 # CNB OAM Document Category Classifier
 
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/Lendoran/CNB_validator)
+
 Predict the category of documents submitted to the Czech National Bank's OAM
 (Centrální úložiště regulovaných informací) using text content extracted from
 file attachments.
@@ -34,13 +36,12 @@ pip install -e ".[bert]"
    ```bash
    cp config-default.yaml config.yaml
    ```
-2. Open `config.yaml` and fill in your settings. If using the Ollama LLM classifier, specify your credentials under `ollama`:
-   ```yaml
-   username: "your_username"
-   password: "your_password"
-   ```
+2. Open `config.yaml` and fill in your settings.
+3. **Important:** If using the **Ollama LLM classifier**, you must specify your own Ollama `host` and authentication `credentials` (username/password) under the `ollama` section in `config.yaml`.
 
-## Usage
+## Usage (CLI Utility)
+
+The project includes a unified CLI for the entire pipeline.
 
 ```bash
 # 1. Scrape metadata from OAM website
@@ -49,7 +50,7 @@ python -m src.cli scrape --output data/
 # 2. Download file attachments
 python -m src.cli download --resume
 
-# 3. Extract text from downloaded files
+# 3. Extract text from downloaded files (PDF, DOCX, XHTML, XBRL, ZIP)
 python -m src.cli extract
 
 # 4. Train classifiers
@@ -60,17 +61,24 @@ python -m src.cli train --method czech_bert
 # 5. Evaluate and compare all methods
 python -m src.cli evaluate --all --output results/
 
-# 6. Generate dynamic HTML comparison report
-python generate_report.py
+# 6. Compile reports from saved runs
+python -m src.cli report
 ```
 
-## Classification Approaches
+## Results & Performance
 
-| Method | Description | Expected Accuracy |
-|--------|-------------|-------------------|
-| Rule-based | Keyword/regex pattern matching | ~60-75% |
-| TF-IDF + ML | TF-IDF vectorization + SVM/RF/LogReg | ~80-90% |
-| Czech BERT | Fine-tuned RobeCzech/Czert | ~88-95% |
+Based on our evaluation on the test split (20% of the dataset), the models achieved the following performance:
+
+| Method | Accuracy | Macro F1 | Weighted F1 |
+|--------|----------|----------|-------------|
+| TF-IDF (SVM) | 95.0 % | 0.788 | 0.949 |
+| Czech BERT (RobeCzech) | 94.7 % | 0.681 | 0.944 |
+| TF-IDF (Random Forest) | 93.3 % | 0.734 | 0.930 |
+| TF-IDF (Logistic Regression) | 89.8 % | 0.760 | 0.908 |
+| Rule-based | 72.2 % | 0.488 | 0.724 |
+| Ollama LLM (Gemma 3) | 66.2 % | 0.520 | 0.678 |
+
+*Note: TF-IDF with a Linear Support Vector Machine (SVM) proved to be the most accurate model overall. Czech BERT achieved very comparable performance with higher potential for robust contextual generalization on new formats.*
 
 ## Document Categories
 

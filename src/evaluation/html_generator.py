@@ -107,7 +107,7 @@ def generate_html_report(results: dict, labels: list[str], output_path: Path) ->
             },
             "ollama": {
                 "name": "Ollama LLM (Gemma 3 12B)",
-                "desc": "Velký jazykový model dotazovaný v zero-shot a few-shot režimu. Vykazuje výborné zobecnění a porozumění kontextu v češtině bez lokálního trénování, ale komunikace přes API je pomalejší než lokální modely."
+                "desc": "Velký jazykový model dotazovaný v zero-shot a few-shot režimu. Vykazuje výborné zobecnění a porozumění kontextu v češtině bez dotrénování, ale komunikace přes API je pomalejší než lokální modely."
             },
             "svm": {
                 "name": "TF-IDF + SVM (Linear Support Vector Machine)",
@@ -115,7 +115,7 @@ def generate_html_report(results: dict, labels: list[str], output_path: Path) ->
             },
             "czech_bert": {
                 "name": "Czech BERT (RobeCzech)",
-                "desc": "Lokálně fine-tunovaný český transformer model založený na architektuře RoBERTa. Výborně rozumí kontextu, české sémantice a syntaxi vět. Na testovacích datech dosáhl velmi vysoké úspěšnosti (těsně pod úrovní SVM), přičemž vykazuje výborný potenciál zobecnění na zcela nových a odlišně formátovaných dokumentech."
+                "desc": "Lokálně fine-tunovaný český transformer model založený na architektuře RoBERTa. Výborně rozumí kontextu, české sémantice a syntaxi vět."
             }
         }
         if key in default_meta:
@@ -173,6 +173,9 @@ def generate_html_report(results: dict, labels: list[str], output_path: Path) ->
             <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: var(--text-primary);"><i class="fa-solid fa-wand-magic-sparkles"></i> Možnosti budoucího vylepšení</h3>
             <p>
                 Jako hlavní směr budoucího rozvoje se nabízí hybridní přístup: využití statistického modelu SVM či Czech BERT pro rychlou a vysoce přesnou prvotní filtraci a klasifikaci, a následné nasazení pokročilých LLM k detailní analýze a slovnímu vysvětlení (explainability) u sporných případů, kde je detekován nesoulad (mismatch) mezi deklarovanou a predikovanou třídou dokumentu.
+            </p>
+            <p style="margin-top: 1rem;">
+                Kompletní zdrojové kódy projektu, implementace jednotlivých modelů a návod k použití CLI utility jsou k dispozici v <a href="https://github.com/Lendoran/CNB_validator" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 600;">repozitáři na GitHubu <i class="fa-brands fa-github"></i></a>.
             </p>"""
 
     # 4. Format JavaScript code strings

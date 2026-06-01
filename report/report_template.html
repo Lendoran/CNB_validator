@@ -1437,9 +1437,21 @@
                 if (row) {
                     const cells = row.getElementsByTagName('td');
                     if (cells.length >= 4) {
-                        cells[1].innerText = metricsData.accuracy[model].toFixed(3);
-                        cells[2].innerText = metricsData.macroF1[model].toFixed(3);
-                        cells[3].innerText = metricsData.weightedF1[model].toFixed(3);
+                        const acc = metricsData.accuracy[model];
+                        const mF1 = metricsData.macroF1[model];
+                        const wF1 = metricsData.weightedF1[model];
+                        
+                        cells[1].innerText = acc !== null ? acc.toFixed(3) : "--";
+                        cells[2].innerText = mF1 !== null ? mF1.toFixed(3) : "--";
+                        cells[3].innerText = wF1 !== null ? wF1.toFixed(3) : "--";
+                        
+                        if (acc === null) {
+                            row.style.opacity = "0.6";
+                            row.title = "Tato metoda nebyla vyhodnocena";
+                        } else {
+                            row.style.opacity = "1";
+                            row.title = "";
+                        }
                     }
                 }
             });
@@ -1448,7 +1460,20 @@
         // Initialize dashboard UI
         function initDashboard() {
             updateTableValues();
-            selectModel(currentModel);
+            
+            // Auto-select best EVALUATED model instead of just 'svm'
+            const models = ['svm', 'czech_bert', 'rf', 'logreg', 'rule', 'ollama'];
+            let bestModel = 'svm';
+            let bestAcc = -1;
+            
+            models.forEach(m => {
+                if (metricsData.accuracy[m] !== null && metricsData.accuracy[m] > bestAcc) {
+                    bestAcc = metricsData.accuracy[m];
+                    bestModel = m;
+                }
+            });
+            
+            selectModel(bestModel);
             renderChart();
         }
 
@@ -1483,6 +1508,21 @@
             if (targetBtn) {
                 targetBtn.classList.add('active');
             }
+            
+            // Update indicator for non-evaluated models in switcher
+            const models = ['rule', 'logreg', 'rf', 'svm', 'ollama', 'czech_bert'];
+            models.forEach(m => {
+                const btn = document.getElementById(`matrix-btn-${m}`);
+                if (btn) {
+                    if (!modelMeta[m].evaluated) {
+                        btn.style.opacity = "0.5";
+                        btn.title = "Model nebyl vyhodnocen";
+                    } else {
+                        btn.style.opacity = "1";
+                        btn.title = "";
+                    }
+                }
+            });
 
             // Update details
             if (modelMeta[modelId]) {
@@ -1510,10 +1550,11 @@
 
             models.forEach(model => {
                 const val = metricsData[currentMetric][model];
-                const pct = (val * 100).toFixed(1) + '%';
+                const displayVal = val !== null ? val : 0;
 
                 const group = document.createElement('div');
                 group.className = 'bar-group';
+                if (val === null) group.style.opacity = "0.4";
 
                 const label = document.createElement('div');
                 label.className = 'bar-label';
@@ -1526,12 +1567,12 @@
                 barFill.className = 'bar-fill';
                 // Trigger CSS width transition
                 setTimeout(() => {
-                    barFill.style.width = (val * 100) + '%';
+                    barFill.style.width = (displayVal * 100) + '%';
                 }, 50);
 
                 const valEl = document.createElement('div');
                 valEl.className = 'bar-value';
-                valEl.innerText = val.toFixed(3);
+                valEl.innerText = val !== null ? val.toFixed(3) : "N/A";
 
                 barContainer.appendChild(barFill);
                 group.appendChild(label);
@@ -1544,8 +1585,20 @@
         // Render the confusion matrix grid
         function renderMatrix() {
             const grid = document.getElementById('matrix-grid-element');
+            const tooltip = document.getElementById('matrix-tooltip-element');
             grid.innerHTML = '';
 
+            if (!modelMeta[currentModel].evaluated || !modelMeta[currentModel].cm) {
+                grid.style.display = 'flex';
+                grid.style.alignItems = 'center';
+                grid.style.justifyContent = 'center';
+                grid.style.backgroundColor = 'var(--bg-tertiary)';
+                grid.innerHTML = '<div style="text-align:center; color:var(--text-muted); font-weight:600; padding:2rem;"><i class="fa-solid fa-triangle-exclamation" style="font-size:2rem; margin-bottom:1rem; display:block;"></i>Tento model nebyl vyhodnocen.<br/><span style="font-size:0.85rem; font-weight:400;">Spusťte evaluaci pro zobrazení dat.</span></div>';
+                tooltip.innerHTML = 'Data pro tento model nejsou k dispozici.';
+                return;
+            }
+
+            grid.style.display = 'grid';
             const matrix = modelMeta[currentModel].cm;
             const rowTotals = matrix.map(row => row.reduce((a, b) => a + b, 0));
 
@@ -1575,7 +1628,6 @@
 
                     // Add mouse hover details
                     cell.onmouseover = () => {
-                        const tooltip = document.getElementById('matrix-tooltip-element');
                         tooltip.innerHTML = `
                             <strong>Skutečná třída:</strong> ${categoriesList[r]} <br/>
                             <strong>Predikovaná třída:</strong> ${categoriesList[c]} <br/>

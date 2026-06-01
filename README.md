@@ -17,15 +17,32 @@ src/
 └── cli.py            # Command-line interface
 ```
 
+## Prerequisites
+
+- **Python 3.8+**
+- **GPU with CUDA support** (recommended for training `czech_bert`)
+- **Ollama** (optional, required only for `ollama_llm` classifier)
+
 ## Quick Start
 
-```bash
-# Install dependencies
-pip install -r requirements.txt
+1. **Create and activate a virtual environment:**
+   ```bash
+   python -m venv .venv
+   # Windows:
+   .venv\Scripts\activate
+   # Linux/macOS:
+   source .venv/bin/activate
+   ```
 
-# Install Playwright browsers
-playwright install chromium
-```
+2. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Install Playwright browsers:**
+   ```bash
+   python -m playwright install chromium
+   ```
 
 ## Configuration
 
@@ -57,9 +74,11 @@ python -m src.cli train --method tfidf --classifier svm
 python -m src.cli train --method czech_bert
 
 # 5. Evaluate and compare all methods
+# Note: This requires you to have trained the models first (Step 4)
 python -m src.cli evaluate --all --output results/
 
-# 6. Compile reports from saved runs (generates report/report.html)
+# 6. Compile reports from saved runs
+# Generates a detailed HTML report at report/report.html
 python -m src.cli report
 ```
 

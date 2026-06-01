@@ -185,8 +185,11 @@ def generate_html_report(results: dict, labels: list[str], output_path: Path) ->
             lines.append(f"            {m_name}: {{")
             metric_vals = []
             for k in ["rule", "logreg", "rf", "svm", "ollama", "czech_bert"]:
-                val = metrics[m_name].get(k, 0.0)
-                metric_vals.append(f"                {k}: {val:.3f}")
+                val = metrics[m_name].get(k)
+                if val is not None:
+                    metric_vals.append(f"                {k}: {val:.3f}")
+                else:
+                    metric_vals.append(f"                {k}: null")
             lines.append(",\n".join(metric_vals))
             lines.append("            }" + ("," if m_name != "weightedF1" else ""))
         lines.append("        };")
@@ -199,22 +202,23 @@ def generate_html_report(results: dict, labels: list[str], output_path: Path) ->
             model_data = meta.get(k, {})
             name = model_data.get("name", "")
             desc = model_data.get("desc", "")
-            cm = model_data.get("cm", [])
+            cm = model_data.get("cm")
+            evaluated = "true" if cm else "false"
             
-            # Fallback mock matrix if none exists
-            if not cm:
-                cm = [[0]*12 for _ in range(12)]
-
             lines.append(f"            {k}: {{")
             lines.append(f'                name: "{name}",')
             lines.append(f'                desc: "{desc}",')
+            lines.append(f'                evaluated: {evaluated},')
             
-            cm_lines = []
-            for row in cm:
-                cm_lines.append("                    " + str(row))
-            cm_str = "[\n" + ",\n".join(cm_lines) + "\n                ]"
-            
-            lines.append(f"                cm: {cm_str}")
+            if cm:
+                cm_lines = []
+                for row in cm:
+                    cm_lines.append("                    " + str(row))
+                cm_str = "[\n" + ",\n".join(cm_lines) + "\n                ]"
+                lines.append(f"                cm: {cm_str}")
+            else:
+                lines.append('                cm: null')
+                
             lines.append("            }" + ("," if idx < len(model_keys) - 1 else ""))
         lines.append("        };")
         return "\n".join(lines)

@@ -28,6 +28,18 @@ playwright install chromium
 pip install -e ".[bert]"
 ```
 
+## Configuration
+
+1. Copy the default configuration template:
+   ```bash
+   cp config-default.yaml config.yaml
+   ```
+2. Open `config.yaml` and fill in your settings. If using the Ollama LLM classifier, specify your credentials under `ollama`:
+   ```yaml
+   username: "your_username"
+   password: "your_password"
+   ```
+
 ## Usage
 
 ```bash
@@ -47,6 +59,9 @@ python -m src.cli train --method czech_bert
 
 # 5. Evaluate and compare all methods
 python -m src.cli evaluate --all --output results/
+
+# 6. Generate dynamic HTML comparison report
+python generate_report.py
 ```
 
 ## Classification Approaches

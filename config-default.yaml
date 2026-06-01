@@ -1,0 +1,106 @@
+# Paths
+paths:
+  data_dir: "data"
+  raw_dir: "data/raw"
+  extracted_dir: "data/extracted"
+  metadata_db: "data/metadata.db"
+  splits_dir: "data/splits"
+  results_dir: "results"
+  figures_dir: "results/figures"
+  models_dir: "models"
+
+# Scraper settings
+scraper:
+  base_url: "https://oam.cnb.cz"
+  search_url: "https://oam.cnb.cz/sipresextdad/SIPRESWEB.WEB21.START_INPUT_OAM"
+  results_url: "https://oam.cnb.cz/xmlpserver/OAM_CNB_CZ/R1_RES.xdo"
+  detail_url: "https://oam.cnb.cz/xmlpserver/OAM_CNB_CZ/R2_FXX.xdo"
+  download_url: "https://oam.cnb.cz/sipresextdad/SIPRESWEB.BIP00.DWNL_FILE"
+  rate_limit_seconds: 1.5
+  max_retries: 3
+  timeout_seconds: 180
+  language: "cz"
+
+# Category configuration
+# Categories to classify (Typ informace from OAM)
+# "Výroční/pololetní finanční zpráva" is split into sub-types via Typ zprávy
+categories:
+  # Active categories with file attachments
+  classify:
+    - "Oznámení o konání valné hromady"
+    - "Informace související s valnou hromadou"
+    - "Informace související s emisí dluhopisů"
+    - "Výroční finanční zpráva"           # Split from Výroční/pololetní
+    - "Pololetní finanční zpráva"          # Split from Výroční/pololetní
+    - "Vnitřní informace"
+    - "Oznámení podílu na hlasovacích právech"
+    - "Informace o celkovém počtu hlasovacích práv a výši základního kapitálu"
+    - "Oznámení o konání schůze vlastníků"
+    - "Informace o nabytí nebo pozbytí vlastních akcií emitenta"
+    - "Zpráva o úhradách placených státu"
+    - "Samostatná zpráva o nefinančních informacích"
+
+  # Excluded: too few records or no file attachments
+  exclude:
+    - "Informace o manažerských transakcích od 2.3.2017"   # Structured data, no files
+    - "Informace o manažerských transakcích do 1.3.2017"   # Legacy, structured data
+    - "Informace o emisi, půjčce, úvěru apod. (zrušeno k 31.05.2016)"  # Abolished
+    - "Mezitímní zpráva (zrušeno k 31.05.2016)"            # Abolished
+    - "Souhrnný dokument uveřejněných údajů (zrušeno k 30.06.2011)"  # Abolished
+    - "Volba referenčního státu"                            # Very few records
+    - "Informace o změně práva"                             # Very few records
+
+# Preprocessing settings
+preprocessing:
+  max_text_length: 50000       # Max characters to keep per document
+  min_text_length: 50          # Min characters for valid extraction
+  bert_max_tokens: 512         # Max tokens for BERT input
+  language: "cs"               # Czech language code
+
+# Training settings
+training:
+  test_size: 0.2
+  val_size: 0.1
+  random_seed: 42
+  
+  tfidf:
+    max_features: 10000
+    ngram_range: [1, 2]
+    classifiers:
+      - "svm"
+      - "random_forest"
+      - "logistic_regression"
+  
+  bert:
+    model_name: "ufal/robeczech-base"
+    epochs: 5
+    batch_size: 8
+    learning_rate: 2.0e-5
+    warmup_ratio: 0.1
+    weight_decay: 0.01
+
+# Evaluation settings
+evaluation:
+  metrics:
+    - "accuracy"
+    - "precision"
+    - "recall"
+    - "f1"
+  average: "weighted"
+  export_formats:
+    - "csv"
+    - "latex"
+
+# Ollama LLM Classifier Settings
+ollama:
+  host: "https://ollama.kky.zcu.cz"
+  model_name: "gemma3:12b"
+  auth_type: "digest"
+  username: ""
+  password: ""
+  timeout_seconds: 45
+  few_shot_examples:
+    - text: "Pozvánka na řádnou valnou hromadu společnosti. Program jednání..."
+      label: "Oznámení o konání valné hromady"
+    - text: "Zpráva o platbách orgánům státní správy a vládám za rok 2025..."
+      label: "Zpráva o úhradách placených státu"

@@ -661,15 +661,42 @@
             min-height: 80px;
         }
 
-        .matrix-switch-btn {
+        /* Segmented control style for switcher */
+        .matrix-switcher {
+            display: flex;
+            gap: 0.25rem;
+            margin-bottom: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            background-color: var(--bg-tertiary);
+            padding: 0.25rem;
             border-radius: var(--radius-md);
-            font-weight: 500;
+            border: 1px solid var(--border-color);
+            width: fit-content;
+            max-width: 100%;
+        }
+
+        .matrix-switch-btn {
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            padding: 0.5rem 0.9rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
             transition: var(--transition);
         }
+
+        .matrix-switch-btn:hover {
+            color: var(--accent);
+            background-color: rgba(180, 83, 9, 0.05);
+        }
+
         .matrix-switch-btn.active {
-            background-color: var(--accent);
+            background: var(--accent-gradient);
             color: white;
-            border-color: var(--accent);
+            box-shadow: var(--shadow-sm);
         }
 
         /* Interactive Sandbox Tester */
@@ -908,7 +935,7 @@
                 <i class="fa-solid fa-circle-check"></i> Semestrální práce / Projekt
             </div>
             <h1 id="uvod">Klasifikace a validace dokumentů regulovaných informací ČNB OAM</h1>
-            <div class="subtitle">Vyhodnocení metod strojového učení a velkých jazykových modelů (LLM) na českém korpusu</div>
+            <div class="subtitle">Vyhodnocení metod strojového učení, hlubokého učení (BERT) a velkých jazykových modelů (LLM) na českém korpusu</div>
             
             <div class="author-box" style="display: flex; align-items: center; gap: 1rem; margin-top: 1.5rem; padding: 1rem 1.25rem; background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); max-width: max-content;">
                 <div class="logo-icon" style="border-radius: 50%; font-size: 1.15rem; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--accent-gradient); color: white;">
@@ -927,16 +954,16 @@
             <div class="abstract-column">
                 <h3>Abstrakt (CZ)</h3>
                 <p>
-                    Tato semestrální práce se zabývá problematikou automatické klasifikace a validace dokumentů odesílaných do portálu regulovaných informací České národní banky (ČNB OAM). Cílem projektu je vytvořit robustní softwarový systém pro sběr dat z portálu ČNB OAM a vyhodnotit úspěšnost různých metod strojového učení a velkých jazykových modelů (LLM) při klasifikaci těchto dokumentů do příslušných kategorií. V práci je popsán návrh a implementace datového sběru, metodika předzpracování textu (včetně ořezávání dlouhých textů) a následné vyhodnocení.
+                    Tato semestrální práce se zabývá problematikou automatické klasifikace a validace dokumentů odesílaných do portálu regulovaných informací České národní banky (ČNB OAM). Cílem projektu je vytvořit robustní softwarový systém pro sběr dat z portálu ČNB OAM a vyhodnotit úspěšnost různých metod strojového učení, hlubokého učení (Czech BERT) a velkých jazykových modelů (LLM) při klasifikaci těchto dokumentů do příslušných kategorií. V práci je popsán návrh a implementace datového sběru, metodika předzpracování textu (včetně ořezávání dlouhých textů) a následné vyhodnocení.
                 </p>
-                <div class="keywords">Klíčová slova: klasifikace textu, Česká národní banka, ČNB OAM, strojové učení, TF-IDF, SVM, Gemma 3, ZČU</div>
+                <div class="keywords">Klíčová slova: klasifikace textu, Česká národní banka, ČNB OAM, strojové učení, hluboké učení, RobeCzech, TF-IDF, SVM, Gemma 3, ZČU</div>
             </div>
             <div class="abstract-column">
                 <h3>Abstract (EN)</h3>
                 <p>
-                    This semestral project addresses the automated classification and validation of regulatory documents submitted to the Czech National Bank's OAM portal. The objective of this project is to build a robust data collection pipeline and evaluate the performance of various machine learning and large language model (LLM) approaches in classifying these documents. We describe the design and implementation of the data collection process, text preprocessing techniques, and subsequent experiments.
+                    This semestral project addresses the automated classification and validation of regulatory documents submitted to the Czech National Bank's OAM portal. The objective of this project is to build a robust data collection pipeline and evaluate the performance of various machine learning, deep learning (Czech BERT), and large language model (LLM) approaches in classifying these documents. We describe the design and implementation of the data collection process, text preprocessing techniques, and subsequent experiments.
                 </p>
-                <div class="keywords">Keywords: text classification, Czech National Bank, ML, TF-IDF, SVM, Gemma 3, UWB</div>
+                <div class="keywords">Keywords: text classification, Czech National Bank, ML, deep learning, RobeCzech, TF-IDF, SVM, Gemma 3, UWB</div>
             </div>
         </div>
 
@@ -954,7 +981,7 @@
             </p>
             <ul style="margin-left: 2rem; margin-bottom: 1.5rem; color: var(--text-secondary);">
                 <li>Automatizovaný sběr dat (scraping) z portálu ČNB OAM, stahování příloh a extrakci textu.</li>
-                <li>Návrh a trénování klasifikačních modelů pro rozřazování dokumentů do 12 aktivních kategorií.</li>
+                <li>Návrh a trénování klasických ML modelů (SVM, LogReg, RF) a jemné doladění českého transformeru (Czech BERT) pro rozřazování dokumentů do 12 kategorií.</li>
                 <li>Nasazení velkého jazykového modelu prostřednictvím univerzitního serveru Ollama.</li>
                 <li>Validaci shody mezi deklarovanou kategorií dokumentu a jeho skutečným obsahem.</li>
             </ul>
@@ -964,10 +991,10 @@
         <section id="teorie">
             <h2><i class="fa-solid fa-book"></i> 2. Teoretické zázemí</h2>
             <p>
-                Klasifikace textu je standardní úlohou zpracování přirozeného jazyka (NLP). V tomto projektu porovnáváme tři hlavní směry pro klasifikaci dokumentů.
+                Klasifikace textu je standardní úlohou zpracování přirozeného jazyka (NLP). V tomto projektu porovnáváme čtyři hlavní směry pro klasifikaci dokumentů.
             </p>
             
-            <div class="grid-3">
+            <div class="grid-4" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin: 2rem 0;">
                 <div class="card">
                     <div class="card-icon"><i class="fa-solid fa-gears"></i></div>
                     <div class="card-title">Pravidlový systém</div>
@@ -976,7 +1003,12 @@
                 <div class="card">
                     <div class="card-icon"><i class="fa-solid fa-calculator"></i></div>
                     <div class="card-title">Statistické ML modely</div>
-                    <div class="card-desc">Texty jsou převedeny na numerické vektory pomocí TF-IDF reprezentace. Na tyto vektory jsou aplikovány tři klasické ML algoritmy: <strong>Support Vector Machines (SVM)</strong>, <strong>Logistická regrese (LR)</strong> a <strong>Náhodné lesy (RF)</strong>.</div>
+                    <div class="card-desc">Texty jsou převedeny na numerické vektory pomocí TF-IDF reprezentace n-gramů. Na tyto vektory jsou aplikovány tři klasické ML algoritmy: <strong>Support Vector Machines (SVM)</strong>, <strong>Logistická regrese (LR)</strong> a <strong>Náhodné lesy (RF)</strong>.</div>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fa-solid fa-network-wired"></i></div>
+                    <div class="card-title">Hluboké učení (BERT)</div>
+                    <div class="card-desc">Jazykový model typu Transformer (RobeCzech) trénovaný specificky pro češtinu a jemně doladěný (fine-tuned) na našem datasetu. Dokáže zachytit hluboký sémantický kontext a vztahy mezi slovy.</div>
                 </div>
                 <div class="card">
                     <div class="card-icon"><i class="fa-solid fa-brain"></i></div>
@@ -984,6 +1016,14 @@
                     <div class="card-desc">Zero-shot a few-shot zařazení dokumentů bez lokálního trénování pomocí LLM modelů běžících na serveru Ollama. Model analyzuje sémantiku textu a zařazuje jej do cílových kategorií.</div>
                 </div>
             </div>
+
+            <h3>Jazykový model Czech BERT (RobeCzech)</h3>
+            <p>
+                RobeCzech je reprezentativní český transformer model založený na architektuře RoBERTa, předtrénovaný na rozsáhlém českém korpusu (čítajícím přes 16 GB textu). V rámci této práce jsme model podrobili procesu fine-tuningu (jemného doladění) na našem specifickém datasetu dokumentů ČNB OAM.
+            </p>
+            <p>
+                Na rozdíl od statických příznaků TF-IDF dokáže BERT modelovat obousměrný kontext slov a lépe porozumět české gramatice, skloňování a sémantice složitých finančních výkazů. Model byl natrénován s využitím optimalizátoru AdamW po dobu 5 epoch s dynamickým ořezáváním dlouhých textů (head-tail truncation), čímž dosahuje špičkových výsledků na našich testovacích datech.
+            </p>
 
             <h3>Využití velkých jazykových modelů (LLM)</h3>
             <p>
@@ -998,7 +1038,7 @@
         <section id="implementace">
             <h2><i class="fa-solid fa-code"></i> 3. Praktická implementace</h2>
             <p>
-                Softwarový systém je napsán v jazyce Python 3 a skládá se ze tří hlavních modulů: scraperu, předzpracování textu a klasifikátoru.
+                Softwarový systém je napsán v jazyce Python 3 a skládá se ze čtyř hlavních modulů: scraperu, předzpracování textu, klasifikačních modelů (klasických i hlubokých) a vyhodnocovací/reportovací utility.
             </p>
 
             <h3>1. Sběr dat</h3>
@@ -1011,12 +1051,12 @@
                 Klasifikované PDF soubory, naskenované dokumenty převedené přes OCR nebo ZIP archivy mohou být extrémně dlouhé (stovky stran). Většina klíčových informací o kategorii (jako je název dokumentu, např. „Výroční zpráva“, „Pozvánka...“) se nachází na první straně (hlavička) nebo na samotném konci (podpisy a schválení).
             </p>
             <p>
-                Pro snížení šumu a splnění limitu kontextového okna transformerů jsme implementovali metodu <strong>ořezávání hlavy a paty (head-tail truncation)</strong>. Pokud text dokumentu překročí 20 000 znaků, zachováme prvních 15 000 znaků a posledních 5 000 znaků a prostřední část textu zahodíme.
+                Pro snížení šumu a splnění limitu kontextového okna transformerů jsme implementovali metodu <strong>ořezávání hlavy a paty (head-tail truncation)</strong>. Pokud text dokumentu překročí 20 000 znaků, zachováme prvních 15 000 znaků a posledních 5 000 znaků a prostřední část textu zahodíme. Tato redukce je zásadní zejména pro model <strong>Czech BERT (RobeCzech)</strong>, který má pevný limit 512 tokenů, i pro efektivitu volání <strong>Ollama LLM API</strong>.
             </p>
 
-            <h3>3. Integrace s Ollama API</h3>
+            <h3>3. Integrace s Ollama API a Czech BERT</h3>
             <p>
-                Modul <code>OllamaLLMClassifier</code> zajišťuje integraci a dotazování velkého jazykového modelu přes REST API na vzdáleném serveru Ollama.
+                Modul <code>OllamaLLMClassifier</code> zajišťuje integraci a dotazování velkého jazykového modelu přes REST API na vzdáleném serveru Ollama. Modul <code>CzechBertClassifier</code> implementuje rozhraní pro lokální jemné doladění (fine-tuning) a predikci českého transformeru RobeCzech pomocí knihovny Hugging Face Transformers.
             </p>
 
             <h3>4. Statistiky datasetu a rozdělení dat (Train / Val / Test)</h3>
@@ -1183,7 +1223,7 @@
         <section id="srovnani">
             <h2><i class="fa-solid fa-chart-simple"></i> 4. Srovnání výsledků</h2>
             <p>
-                V této části jsou zobrazeny výsledky srovnání pěti klasifikačních metod na testovacím splitu. Data byla rozdělena na trénovací (70 %), validační (10 %) a testovací split (20 %) z celkového datasetu (celkem <strong>857</strong> testovacích dokumentů). Nejlepších výsledků dosáhla metoda <strong>TF-IDF (SVM)</strong> s přesností <strong>95.0 %</strong>. Tento výsledek ukazuje účinnost statistických metod na českém textovém korpusu.
+                V této části jsou zobrazeny výsledky srovnání šesti klasifikačních metod na testovacím splitu. Data byla rozdělena na trénovací (70 %), validační (10 %) a testovací split (20 %) z celkového datasetu (celkem <strong>857</strong> testovacích dokumentů). Nejlepších výsledků dosáhla metoda <strong>TF-IDF (SVM)</strong> s přesností <strong>95.0 %</strong>. Tento výsledek ukazuje účinnost pokročilých statistických a transformerových metod na českém textovém korpusu.
             </p>
 
             <!-- Dashboard -->
@@ -1272,13 +1312,13 @@
             
             <div class="matrix-container" style="display: flex; flex-direction: column; align-items: center;">
                 <!-- Model Switcher for Confusion Matrix -->
-                <div class="matrix-switcher" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; justify-content: center; flex-wrap: wrap;">
-                    <button class="btn matrix-switch-btn" onclick="selectModel('rule')" id="matrix-btn-rule">Pravidlový systém</button>
-                    <button class="btn matrix-switch-btn" onclick="selectModel('logreg')" id="matrix-btn-logreg">TF-IDF + Logistická regrese</button>
-                    <button class="btn matrix-switch-btn" onclick="selectModel('rf')" id="matrix-btn-rf">TF-IDF + Náhodný les</button>
-                    <button class="btn matrix-switch-btn" onclick="selectModel('svm')" id="matrix-btn-svm">TF-IDF + SVM (Linear)</button>
-                    <button class="btn matrix-switch-btn" onclick="selectModel('ollama')" id="matrix-btn-ollama">Ollama LLM (Gemma 3)</button>
-                    <button class="btn matrix-switch-btn" onclick="selectModel('czech_bert')" id="matrix-btn-czech_bert">Czech BERT (RobeCzech)</button>
+                <div class="matrix-switcher">
+                    <button class="matrix-switch-btn" onclick="selectModel('rule')" id="matrix-btn-rule">Pravidla</button>
+                    <button class="matrix-switch-btn" onclick="selectModel('logreg')" id="matrix-btn-logreg">TF-IDF LogReg</button>
+                    <button class="matrix-switch-btn" onclick="selectModel('rf')" id="matrix-btn-rf">TF-IDF Náhodný les</button>
+                    <button class="matrix-switch-btn" onclick="selectModel('svm')" id="matrix-btn-svm">TF-IDF SVM</button>
+                    <button class="matrix-switch-btn" onclick="selectModel('ollama')" id="matrix-btn-ollama">Ollama LLM</button>
+                    <button class="matrix-switch-btn" onclick="selectModel('czech_bert')" id="matrix-btn-czech_bert">Czech BERT</button>
                 </div>
                 
                 <div class="matrix-grid" id="matrix-grid-element">
@@ -1326,16 +1366,21 @@
         <section id="zaver">
             <h2><i class="fa-solid fa-flag-checkered"></i> 6. Závěr a doporučení</h2>
             <p>
-                V rámci této semestrální práce jsme úspěšně navrhli, naimplementovali a vyhodnotili systém pro klasifikaci a validaci dokumentů regulovaných informací z portálu ČNB OAM.
+                V rámci této semestrální práce jsme úspěšně navrhli, naimplementovali a vyhodnotili ucelený systém pro klasifikaci a validaci dokumentů regulovaných informací z portálu ČNB OAM. Vyhodnotili jsme celkem 6 různých metod rozdělených do čtyř základních přístupů: pravidlový systém, statistické ML modely (SVM, Logistická regrese, Náhodný les), hluboké učení (Czech BERT / RobeCzech) a velké jazykové modely (Ollama LLM).
             </p>
             <p>
-                V klasifikační úloze se jako nejúspěšnější ukázal model <strong>TF-IDF (SVM)</strong>, který dosáhl přesnosti <strong>95.0 %</strong> a Weighted F1 <strong>0.949</strong>.
-                Lineární SVM a další algoritmy strojového učení trénované na TF-IDF vektorech n-gramů vykazují stabilní a spolehlivou klasifikaci bankovních textů.
+                V klasifikační úloze dosáhl nejvyšší celkové přesnosti model <strong>TF-IDF (SVM)</strong> s přesností <strong>95.0 %</strong> a Weighted F1 <strong>0.949</strong>, těsně následovaný lokálně jemně doladěným českým transformerem <strong>Czech BERT (RobeCzech)</strong> s přesností <strong>94.7 %</strong> a Weighted F1 <strong>0.944</strong>.
+            </p>
+            <p>
+                Statistický model TF-IDF + SVM vykazuje vynikající výsledky díky faktu, že finanční výkazy a úřední oznámení ČNB obsahují vysoce specifický a opakující se slovník (např. standardizované fráze ve výročních zprávách či oznámeních o valných hromadách), který lze velmi dobře separovat lineární nadrovinou. Lokálně doladěný <strong>Czech BERT</strong> však představuje robustnější řešení, které na rozdíl od bag-of-words modeluje sémantické vazby a pořadí slov v českých větách, což mu umožňuje lépe zobecňovat na nových, dosud neviděných dokumentech a lépe odolávat případným změnám ve formátu zpráv.
+            </p>
+            <p>
+                Zatímco pravidlový systém slouží jako rychlý baseline (přesnost 72.2 %), velké jazykové modely (Ollama LLM s Gemma 3) dosáhly v zero-shot režimu přesnosti 66.2 %. LLM sice vykazuje vysokou úroveň sémantického zobecnění a schopnost slovního zdůvodnění predikce v češtině, je však limitováno rychlostí síťového API a absencí lokálního jemného doladění na specifické doménové slovní zásoby, což způsobuje záměny u formálně si blízkých kategorií.
             </p>
             
             <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: var(--text-primary);"><i class="fa-solid fa-wand-magic-sparkles"></i> Možnosti budoucího vylepšení</h3>
             <p>
-                Jako hlavní směr budoucího rozvoje se nabízí využití pokročilejších a větších jazykových modelů (LLM) běžících na serveru Ollama namísto původně použitého modelu Gemma 3. Větší modely disponují lepší schopností porozumění složitému právnímu a ekonomickému textu a mohou poskytovat spolehlivější zdůvodnění svých klasifikačních rozhodnutí.
+                Jako hlavní směr budoucího rozvoje se nabízí hybridní přístup: využití statistického modelu SVM či Czech BERT pro rychlou a vysoce přesnou prvotní filtraci a klasifikaci, a následné nasazení pokročilých LLM k detailní analýze a slovnímu vysvětlení (explainability) u sporných případů, kde je detekován nesoulad (mismatch) mezi deklarovanou a predikovanou třídou dokumentu.
             </p>
         </section>
 

@@ -35,3 +35,5 @@ config.yaml
 
 # Agent scratch
 scratch/
+
+.tmp.*/

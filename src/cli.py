@@ -161,6 +161,8 @@ def scrape(categories: str, limit: int | None, years: str | None) -> None:
 
     asyncio.run(run_scrape())
     click.echo("Scraping completed.")
+    click.echo("\n👉 Next step: Download document attachments using:")
+    click.echo("   python -m src.cli download")
 
 
 @cli.command()
@@ -183,6 +185,8 @@ def download(resume: bool, rate_limit: float | None) -> None:
     click.echo("Starting downloads...")
     dl_count = asyncio.run(downloader.download_all(resume=resume))
     click.echo(f"Download process complete. Succeeded downloads: {dl_count}")
+    click.echo("\n👉 Next step: Extract text from the downloaded documents using:")
+    click.echo("   python -m src.cli extract")
 
 
 @cli.command()
@@ -198,6 +202,8 @@ def extract(force: bool) -> None:
     click.echo("Running text extraction pipeline...")
     extracted_count = pipeline.process_all_files(force=force)
     click.echo(f"Text extraction complete. Processed {extracted_count} files successfully.")
+    click.echo("\n👉 Next step: Train a classification model (e.g. TF-IDF SVM) using:")
+    click.echo("   python -m src.cli train --method tfidf --classifier svm")
 
 
 @cli.command()
@@ -301,6 +307,10 @@ def train(method: str, classifier: str, model: str) -> None:
         clf.save(models_dir / "ollama")
         click.echo(f"OllamaLLMClassifier configs saved to {models_dir / 'ollama'}")
 
+    click.echo(f"Successfully trained {method} classifier.")
+    click.echo(f"\n👉 Next step: Evaluate the trained model performance using:")
+    click.echo(f"   python -m src.cli evaluate --method {method}")
+
 def save_evaluation_run(method_key: str, method_name: str, y_true: list[str], y_pred: list[str]) -> None:
     """Save raw true/predicted labels to results/eval_runs/{method_key}.json."""
     import json
@@ -400,6 +410,9 @@ def evaluate(method: str | None, evaluate_all: bool, output: str | None) -> None
 
         if (models_dir / "bert" / "mappings.json").exists():
             methods_to_evaluate.append("czech_bert")
+
+        if (models_dir / "ollama").exists():
+            methods_to_evaluate.append("ollama")
     elif method:
         if method == "tfidf":
             # If TF-IDF general requested, check and add all found tfidf submodels
@@ -463,9 +476,9 @@ def evaluate(method: str | None, evaluate_all: bool, output: str | None) -> None
             logger.error("Failed evaluating %s: %s", m, e, exc_info=True)
             click.echo(f"Failed evaluating {m}: {e}", err=True)
 
-    # Recompile reports dynamically using all available run files
-    click.echo("\nCompiling aggregated reports...")
-    compile_reports_from_runs(res_dir, categories)
+    click.echo("\nEvaluation completed successfully! Results saved to results/eval_runs/")
+    click.echo("\n👉 Next step: Compile the comparison reports and interactive HTML using:")
+    click.echo("   python -m src.cli report")
 
 
 @cli.command()
@@ -482,6 +495,7 @@ def report(output: str | None) -> None:
     
     click.echo("Compiling reports from saved runs...")
     compile_reports_from_runs(res_dir, categories)
+    click.echo("\n👉 Next step: Open report/report.html in a web browser to view the interactive analysis.")
 
 
 @cli.command()
@@ -553,6 +567,8 @@ def predict(file: str, method: str, classifier: str) -> None:
             for cat, prob in sorted_probs[:5]:
                 click.echo(f"  {cat}: {prob * 100:.2f}%")
         click.echo("===================================================\n")
+        click.echo("👉 Tip: You can validate if the document matches its official category using:")
+        click.echo("   python -m src.cli validate --file <file> --declared-category <category> --method <method>")
     except Exception as e:
         click.echo(f"Error loading/predicting with {method}: {e}", err=True)
         logger.error("Predict command failed", exc_info=True)
@@ -635,6 +651,8 @@ def validate(file: str, declared_category: str, method: str, classifier: str) ->
             for cat, prob in sorted_probs[:3]:
                 click.echo(f"  {cat}: {prob * 100:.2f}%")
         click.echo("===================================================\n")
+        click.echo("👉 Tip: You can try predicting the category of another document file using:")
+        click.echo("   python -m src.cli predict --file <file> --method <method>")
     except Exception as e:
         click.echo(f"Error loading/predicting with {method}: {e}", err=True)
         logger.error("Validate command failed", exc_info=True)
@@ -667,6 +685,9 @@ def stats(db: str | None) -> None:
     for cat, count in stats_dict["category_counts"].items():
         click.echo(f"  {cat:<70}: {count}")
     click.echo("=======================================================\n")
+    click.echo("👉 Tip: You can check if there are pending files to download or extract using:")
+    click.echo("   python -m src.cli download    # to download files")
+    click.echo("   python -m src.cli extract     # to extract text")
 
 
 @cli.command()
@@ -767,6 +788,9 @@ def cross_validate(method: str, classifier: str, folds: int) -> None:
     click.echo("\nClassification Report:")
     click.echo(classification_report(all_true, all_preds))
     click.echo("=========================================================\n")
+    click.echo("👉 Tip: You can train a model using your full train/val splits and evaluate it using:")
+    click.echo("   python -m src.cli train --method <method>")
+    click.echo("   python -m src.cli evaluate --method <method>")
 
 
 if __name__ == "__main__":

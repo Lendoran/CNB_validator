@@ -21,13 +21,10 @@ src/
 
 ```bash
 # Install dependencies
-pip install -e .
+pip install -r requirements.txt
 
 # Install Playwright browsers
 playwright install chromium
-
-# Optional: install BERT dependencies
-pip install -e ".[bert]"
 ```
 
 ## Configuration
@@ -43,6 +40,7 @@ pip install -e ".[bert]"
 
 The project includes a unified CLI for the entire pipeline.
 
+### Core Pipeline
 ```bash
 # 1. Scrape metadata from OAM website
 python -m src.cli scrape --output data/
@@ -61,8 +59,23 @@ python -m src.cli train --method czech_bert
 # 5. Evaluate and compare all methods
 python -m src.cli evaluate --all --output results/
 
-# 6. Compile reports from saved runs
+# 6. Compile reports from saved runs (generates report/report.html)
 python -m src.cli report
+```
+
+### Utility Commands
+```bash
+# Predict category for a single file on disk
+python -m src.cli predict --file path/to/doc.pdf --method tfidf
+
+# Validate if file content matches its declared category
+python -m src.cli validate --file doc.pdf --declared-category "Vnitřní informace" --method bert
+
+# Show database and collection statistics
+python -m src.cli stats
+
+# Run K-Fold cross-validation on the dataset
+python -m src.cli cross-validate --method tfidf --folds 5
 ```
 
 ## Results & Performance
@@ -83,5 +96,5 @@ Based on our evaluation on the test split (20% of the dataset), the models achie
 ## Document Categories
 
 Categories based on "Typ informace" from the OAM website, with "Výroční/pololetní
-finanční zpráva" split into separate annual and semi-annual categories. Very small
+finanční zpráva" split into separate annual and semi-annual categories. Some
 categories are excluded from classification.

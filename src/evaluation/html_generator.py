@@ -115,7 +115,7 @@ def generate_html_report(results: dict, labels: list[str], output_path: Path) ->
             },
             "czech_bert": {
                 "name": "Czech BERT (RobeCzech)",
-                "desc": "Lokálně fine-tunovaný český transformer model založený na architektuře RoBERTa. Výborně rozumí kontextu, české sémantice, skloňování a syntaxi vět, což z něj dělá nejpřesnější model pro klasifikaci složitých bankovních dokumentů."
+                "desc": "Lokálně fine-tunovaný český transformer model založený na architektuře RoBERTa. Výborně rozumí kontextu, české sémantice a syntaxi vět. Na testovacích datech dosáhl velmi vysoké úspěšnosti (těsně pod úrovní SVM), přičemž vykazuje výborný potenciál zobecnění na zcela nových a odlišně formátovaných dokumentech."
             }
         }
         if key in default_meta:

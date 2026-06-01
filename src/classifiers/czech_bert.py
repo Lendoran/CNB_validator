@@ -241,10 +241,12 @@ class CzechBertClassifier(BaseClassifier):
 
         logger.debug("Running BERT predictions on %s for %d texts", device, len(texts))
 
+        from tqdm import tqdm
+
         # Run predictions in batches to prevent OOM
         batch_size = 16
         with torch.no_grad():
-            for i in range(0, len(texts), batch_size):
+            for i in tqdm(range(0, len(texts), batch_size), desc="Running BERT predictions"):
                 batch_texts = texts[i : i + batch_size]
                 
                 # Tokenize batch

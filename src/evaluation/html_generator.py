@@ -112,6 +112,10 @@ def generate_html_report(results: dict, labels: list[str], output_path: Path) ->
             "svm": {
                 "name": "TF-IDF + SVM (Linear Support Vector Machine)",
                 "desc": "Lineární SVM trénovaný na n-gramech dosáhl nejlepších celkových výsledků. Hledá optimální nadrovinu s největší marží, což skvěle funguje v řídkých a rozměrných textových vektorech."
+            },
+            "czech_bert": {
+                "name": "Czech BERT (RobeCzech)",
+                "desc": "Lokálně fine-tunovaný český transformer model založený na architektuře RoBERTa. Výborně rozumí kontextu, české sémantice, skloňování a syntaxi vět, což z něj dělá nejpřesnější model pro klasifikaci složitých bankovních dokumentů."
             }
         }
         if key in default_meta:
@@ -123,7 +127,7 @@ def generate_html_report(results: dict, labels: list[str], output_path: Path) ->
     best_acc = 0.0
     best_f1 = 0.0
     
-    ml_models = ["TF-IDF (SVM)", "TF-IDF (RANDOM_FOREST)", "TF-IDF (LOGISTIC_REGRESSION)"]
+    ml_models = ["Czech BERT", "TF-IDF (SVM)", "TF-IDF (RANDOM_FOREST)", "TF-IDF (LOGISTIC_REGRESSION)"]
     for m in ml_models:
         if m in results:
             acc = results[m]["metrics"]["accuracy"]
@@ -172,7 +176,7 @@ def generate_html_report(results: dict, labels: list[str], output_path: Path) ->
         for m_name in ["accuracy", "macroF1", "weightedF1"]:
             lines.append(f"            {m_name}: {{")
             metric_vals = []
-            for k in ["rule", "logreg", "rf", "svm", "ollama"]:
+            for k in ["rule", "logreg", "rf", "svm", "ollama", "czech_bert"]:
                 val = metrics[m_name].get(k, 0.0)
                 metric_vals.append(f"                {k}: {val:.3f}")
             lines.append(",\n".join(metric_vals))
@@ -182,7 +186,7 @@ def generate_html_report(results: dict, labels: list[str], output_path: Path) ->
 
     def format_model_meta(meta):
         lines = ["const modelMeta = {"]
-        model_keys = ["rule", "logreg", "rf", "svm", "ollama"]
+        model_keys = ["rule", "logreg", "rf", "svm", "ollama", "czech_bert"]
         for idx, k in enumerate(model_keys):
             model_data = meta.get(k, {})
             name = model_data.get("name", "")

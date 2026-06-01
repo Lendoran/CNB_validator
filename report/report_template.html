@@ -1098,6 +1098,12 @@
                                          <td style="text-align: right; font-family: monospace;">0.547</td>
                                          <td style="text-align: right; font-family: monospace;">0.629</td>
                                      </tr>
+                                     <tr id="row-czech_bert" onclick="selectModel('czech_bert')" style="cursor: pointer;">
+                                         <td>Czech BERT (RobeCzech)</td>
+                                         <td style="text-align: right; font-family: monospace;">0.000</td>
+                                         <td style="text-align: right; font-family: monospace;">0.000</td>
+                                         <td style="text-align: right; font-family: monospace;">0.000</td>
+                                     </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -1119,6 +1125,7 @@
                     <button class="btn matrix-switch-btn" onclick="selectModel('rf')" id="matrix-btn-rf">TF-IDF + Náhodný les</button>
                     <button class="btn matrix-switch-btn" onclick="selectModel('svm')" id="matrix-btn-svm">TF-IDF + SVM (Linear)</button>
                     <button class="btn matrix-switch-btn" onclick="selectModel('ollama')" id="matrix-btn-ollama">Ollama LLM (Gemma 3)</button>
+                    <button class="btn matrix-switch-btn" onclick="selectModel('czech_bert')" id="matrix-btn-czech_bert">Czech BERT (RobeCzech)</button>
                 </div>
                 
                 <div class="matrix-grid" id="matrix-grid-element">
@@ -1200,7 +1207,7 @@
 
         // Update table cells from metricsData dynamically
         function updateTableValues() {
-            const models = ['rule', 'logreg', 'rf', 'svm', 'ollama'];
+            const models = ['rule', 'logreg', 'rf', 'svm', 'ollama', 'czech_bert'];
             models.forEach(model => {
                 const row = document.getElementById(`row-${model}`);
                 if (row) {
@@ -1267,13 +1274,14 @@
             const container = document.getElementById('interactive-bars');
             container.innerHTML = '';
             
-            const models = ['rule', 'logreg', 'rf', 'svm', 'ollama'];
+            const models = ['rule', 'logreg', 'rf', 'svm', 'ollama', 'czech_bert'];
             const labels = {
                 rule: 'Pravidlový systém',
                 logreg: 'TF-IDF + Logistická regrese',
                 rf: 'TF-IDF + Náhodný les',
                 ollama: 'Ollama LLM (Gemma 3)',
-                svm: 'TF-IDF + SVM (Linear)'
+                svm: 'TF-IDF + SVM (Linear)',
+                czech_bert: 'Czech BERT (RobeCzech)'
             };
             
             models.forEach(model => {

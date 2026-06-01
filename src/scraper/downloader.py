@@ -61,11 +61,13 @@ class FileDownloader:
         file_id = file_rec["file_id"]
         doc_id = file_rec["document_id"]
         filename = file_rec["filename"]
+        # Sanitize filename (remove backslashes/UNC path prefix, keeping only the base filename)
+        sanitized_filename = Path(filename.replace("\\", "/")).name
         url = file_rec["download_url"]
 
         # Define local path: data/raw/{document_id}/{filename}
         dest_dir = self.raw_dir / doc_id
-        dest_path = dest_dir / filename
+        dest_path = dest_dir / sanitized_filename
 
         # Ensure directory exists
         dest_dir.mkdir(parents=True, exist_ok=True)
@@ -127,7 +129,8 @@ class FileDownloader:
                 file_rec = dict(row)
                 
                 # Define expected local path: data/raw/{document_id}/{filename}
-                expected_path = self.raw_dir / file_rec["document_id"] / file_rec["filename"]
+                sanitized_filename = Path(file_rec["filename"].replace("\\", "/")).name
+                expected_path = self.raw_dir / file_rec["document_id"] / sanitized_filename
                 
                 # Double-check local path if resuming
                 if resume:

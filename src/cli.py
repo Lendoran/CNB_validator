@@ -301,7 +301,50 @@ def train(method: str, classifier: str, model: str) -> None:
         clf.save(models_dir / "ollama")
         click.echo(f"OllamaLLMClassifier configs saved to {models_dir / 'ollama'}")
 
-    click.echo(f"Successfully trained {method} classifier.")
+def save_evaluation_run(method_key: str, method_name: str, y_true: list[str], y_pred: list[str]) -> None:
+    """Save raw true/predicted labels to results/eval_runs/{method_key}.json."""
+    import json
+    run_dir = Path("results/eval_runs")
+    run_dir.mkdir(parents=True, exist_ok=True)
+    run_data = {
+        "method_name": method_name,
+        "y_true": y_true,
+        "y_pred": y_pred
+    }
+    with open(run_dir / f"{method_key}.json", "w", encoding="utf-8") as f:
+        json.dump(run_data, f, ensure_ascii=False, indent=2)
+
+
+def compile_reports_from_runs(res_dir: Path, categories: list[str]) -> None:
+    """Aggregate all runs in results/eval_runs/*.json and compile reports/charts/HTML."""
+    import json
+    from src.evaluation.comparison import MethodComparison
+    
+    run_dir = Path("results/eval_runs")
+    if not run_dir.exists() or not list(run_dir.glob("*.json")):
+        click.echo("Warning: No saved evaluation runs found in results/eval_runs/. Run evaluate first.")
+        return
+        
+    comparison = MethodComparison(labels=categories)
+    
+    for run_file in sorted(run_dir.glob("*.json")):
+        try:
+            with open(run_file, "r", encoding="utf-8") as f:
+                run_data = json.load(f)
+            method_name = run_data["method_name"]
+            y_true = run_data["y_true"]
+            y_pred = run_data["y_pred"]
+            comparison.add_result(method_name, y_true, y_pred)
+        except Exception as e:
+            click.echo(f"Failed to load run from {run_file.name}: {e}", err=True)
+            
+    if len(comparison.results) > 0:
+        comparison.generate_full_report(res_dir)
+        click.echo(f"Evaluation report and charts generated inside {res_dir}")
+        click.echo("\n--- Performance Summary (Aggregated from all saved runs) ---")
+        click.echo(comparison.comparison_table().to_string())
+    else:
+        click.echo("No successful evaluation runs were loaded.")
 
 
 @cli.command()
@@ -344,9 +387,6 @@ def evaluate(method: str | None, evaluate_all: bool, output: str | None) -> None
     test_texts = splits["test"]["texts"]
     test_labels = splits["test"]["labels"]
 
-    from src.evaluation.comparison import MethodComparison
-    comparison = MethodComparison(labels=categories)
-
     methods_to_evaluate = []
     if evaluate_all:
         # Check which models exist on disk
@@ -361,7 +401,13 @@ def evaluate(method: str | None, evaluate_all: bool, output: str | None) -> None
         if (models_dir / "bert" / "mappings.json").exists():
             methods_to_evaluate.append("czech_bert")
     elif method:
-        methods_to_evaluate.append(method)
+        if method == "tfidf":
+            # If TF-IDF general requested, check and add all found tfidf submodels
+            for tfidf_file in (models_dir / "tfidf").glob("tfidf_*.pkl") if (models_dir / "tfidf").exists() else []:
+                clf_type = tfidf_file.stem.replace("tfidf_", "")
+                methods_to_evaluate.append(f"tfidf_{clf_type}")
+        else:
+            methods_to_evaluate.append(method)
     else:
         click.echo("Error: Please specify either --method or --all.", err=True)
         sys.exit(1)
@@ -380,23 +426,22 @@ def evaluate(method: str | None, evaluate_all: bool, output: str | None) -> None
                 clf = RuleBasedClassifier()
                 clf.load(models_dir / "rule_based")
                 pred_res = clf.predict(test_texts)
-                comparison.add_result("Rule-based", test_labels, pred_res.predicted_labels)
+                save_evaluation_run("rule_based", "Rule-based", test_labels, pred_res.predicted_labels)
                 
             elif m.startswith("tfidf_") or m == "tfidf":
                 from src.classifiers.tfidf_ml import TfidfMLClassifier
-                # Extract classifier subtype (svm, rf, logreg)
                 clf_type = m.replace("tfidf_", "") if "_" in m else "svm"
                 clf = TfidfMLClassifier(classifier_type=clf_type)
                 clf.load(models_dir / "tfidf")
                 pred_res = clf.predict(test_texts)
-                comparison.add_result(f"TF-IDF ({clf_type.upper()})", test_labels, pred_res.predicted_labels)
+                save_evaluation_run(f"tfidf_{clf_type}", f"TF-IDF ({clf_type.upper()})", test_labels, pred_res.predicted_labels)
                 
             elif m == "czech_bert":
                 from src.classifiers.czech_bert import CzechBertClassifier
                 clf = CzechBertClassifier()
                 clf.load(models_dir / "bert")
                 pred_res = clf.predict(test_texts)
-                comparison.add_result("Czech BERT", test_labels, pred_res.predicted_labels)
+                save_evaluation_run("czech_bert", "Czech BERT", test_labels, pred_res.predicted_labels)
                 
             elif m == "ollama":
                 from src.classifiers.ollama_llm import OllamaLLMClassifier
@@ -412,20 +457,31 @@ def evaluate(method: str | None, evaluate_all: bool, output: str | None) -> None
                 )
                 clf.load(models_dir / "ollama")
                 pred_res = clf.predict(test_texts)
-                comparison.add_result("Ollama LLM", test_labels, pred_res.predicted_labels)
+                save_evaluation_run("ollama", "Ollama LLM", test_labels, pred_res.predicted_labels)
                 
         except Exception as e:
             logger.error("Failed evaluating %s: %s", m, e, exc_info=True)
             click.echo(f"Failed evaluating {m}: {e}", err=True)
 
-    # Export comparisons
-    if len(comparison.results) > 0:
-        comparison.generate_full_report(res_dir)
-        click.echo(f"Evaluation report and charts generated inside {res_dir}")
-        click.echo("\n--- Performance Summary ---")
-        click.echo(comparison.comparison_table().to_string())
-    else:
-        click.echo("No successful evaluations were completed.")
+    # Recompile reports dynamically using all available run files
+    click.echo("\nCompiling aggregated reports...")
+    compile_reports_from_runs(res_dir, categories)
+
+
+@cli.command()
+@click.option(
+    "--output",
+    default=None,
+    help="Results output directory.",
+)
+def report(output: str | None) -> None:
+    """Generate combined comparison report from saved evaluation runs."""
+    config = load_config()
+    res_dir = Path(output) if output else Path(config["paths"]["results_dir"])
+    categories = config["categories"]["classify"]
+    
+    click.echo("Compiling reports from saved runs...")
+    compile_reports_from_runs(res_dir, categories)
 
 
 @cli.command()
